@@ -1,0 +1,325 @@
+﻿@page
+@model Crop_Management_System.Pages.Staff.IndexModel
+@{ }
+
+<div>
+    <h4 class="mt-4">Users Members</h4>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item active"><a href='@Url.Action("Index","Home")' class="ml-1 mr-1">Dashboard</a> / Users</li>
+    </ol>
+
+    <div class="">
+        <a href="@Url.Page("/Views/Staff/StaffCreation",new { status = 1 })"
+           class="btn btn-primary w-100 font-weight-bold">Add User</a>
+    </div>
+
+    <div>
+        <h5>Location Filter</h5>
+        <div class="border border-info rounded p-3">
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="font-weight-bold">Province <i class="icofont-dotted-down"></i></label>
+                    <select class="form-control " name="provinceId" id="provinceId" onchange="provinceChangeListener()" required>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="font-weight-bold">
+                        <span id="districtSpinner" class="d-none spinner-border  spinner-grow-sm"></span>
+                        District
+                        <i class="icofont-dotted-down"></i>
+                    </label>
+                    <select class="form-control" name="districtId" id="districtId" onchange="districtChangeListener()" required>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="font-weight-bold">
+                        <span id="sateliteSpinner" class="d-none spinner-border  spinner-grow-sm"></span>
+                        Satellite
+                        <i class="icofont-dotted-down"></i>
+                    </label>
+                    <select class="form-control" name="SateliteId" id="sateliteId" onchange="sateliteChangeListener()" required>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- database table -->
+    <div class="mt-4 card mb-4">
+        <div class="card-header">
+            <i class="fas fa-table mr-1"></i>
+            Current Users
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Names</th>
+                            <th>Contact Information</th>
+                            <th>Gender</th>
+                            <th>Date Of Birth</th>
+                            <th>Location</th>
+                            <th>Role</th>
+                            <th>Account Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableData" class=""></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modal" class="modal fade ModelDialog" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <iframe name="dFrame" id="dummyframe" style="display: none;"></iframe>
+            <form id="formData" target="dFrame" onsubmit="editForm()" enctype="multipart/form-data">
+                <input type="hidden" name="id" />
+                <input type="hidden" name="dbOperations" value="Create" />
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Device Modal</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="font-weight-bold">Device ID</label>
+                        <input type="text" class="form-control" name="deviceID" required autocomplete="off">
+                        <label class="font-weight-bold">Device Bearer <i class="icofont-dotted-down"></i></label>
+                        <select class="form-control" name="deviceBearer">
+                            <option value="1">jane  Doe</option>
+                            <option value="1">Michael Sama  Doe</option>
+                            <option value="1">JAke Paul  Doe</option>
+                        </select>
+                        <label class="font-weight-bold">Device Status <i class="icofont-dotted-down"></i></label>
+                        <select class="form-control" name="deviceStatus">
+                            <option value="1">Active</option>
+                            <option value="1">On Hold</option>
+                            <option value="1">Deactive</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="btnEdit" type="submit" class="btn btn-primary">
+                        <span id="btnSpinner" class="d-none spinner-border  spinner-grow-sm" role="status" aria-hidden="true"></span>
+                        Save changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    var url;
+
+    //$(document).ready(async function () {
+    //    await getData();
+    //    displayMainBody();
+    //});
+
+    $(document).ready(async function () {
+        var userRole = getCookie("userRole");
+
+        if (userRole != "Admin") {
+            window.location.href = "/Unauthorized";
+        }
+        await getProvinceData();
+        displayMainBody();
+    });
+
+    async function getProvinceData() {
+        await makeGetRequest(baseUrl + "getProvinces").then(async response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#provinceId').append($('<option>', {
+                        value: dataList.location.trim(),
+                        text: dataList.name.trim(),
+                    }));
+                }
+                await provinceChangeListener();
+            }
+        });
+    }
+
+    async function provinceChangeListener() {
+        $('#districtId').empty();
+        $('#dataTable').DataTable({ "bDestroy": true }).clear();
+        $("#districtSpinner").removeClass('d-none');
+
+        var provinceValue = document.getElementById("provinceId").value;
+        await makeGetRequest(baseUrl + `getDistricts?provinceCode=${provinceValue}`).then(async response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#districtId').append($('<option>', {
+                        value: dataList.location.trim(),
+                        text: dataList.name.trim(),
+                    }));
+                }
+                await districtChangeListener();
+            }
+        });
+        $("#districtSpinner").addClass('d-none');
+    }
+
+    async function districtChangeListener() {
+        $('#sateliteId').empty();
+        $('#dataTable').DataTable({ "bDestroy": true }).clear();
+        $("#sateliteSpinner").removeClass('d-none');
+
+        var districtValue = document.getElementById("districtId").value;
+        await makeGetRequest(baseUrl + `getSatelites?disctrictCode=${districtValue}`).then(async response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#sateliteId').append($('<option>', {
+                        value: dataList.location.trim(),
+                        text: dataList.name.trim(),
+                    }));
+                }
+                await sateliteChangeListener();
+            }
+        });
+        $("#sateliteSpinner").addClass('d-none');
+    }
+
+    async function sateliteChangeListener() {
+        $("#deviceSpinner").removeClass('d-none');
+        $('#dataTable').DataTable({ "bDestroy": true }).clear();
+
+        var sateliteValue = document.getElementById("sateliteId").value;
+        await makeGetRequest(baseUrl + `getStaffByLocation?location=${sateliteValue}`).then(response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+
+                    $('#dataTable').DataTable({
+                        "order": [[0, "desc"]],
+                        "bDestroy": true
+                    }).row.add([
+                        dataList.id,
+                        `${dataList.staffData.firstName} ${dataList.staffData.lastName}`,
+                        `<label class="small">Email: <b>${dataList.staffData.email}</b></label> <br />
+                         <label class="small">Phone Number: <b>${dataList.staffData.phoneNumber}</b></label> <br />
+                         <label class="small">NRC-Number: <b>${dataList.nrcNumber}</b></label> <br />`,
+                        dataList.staffData.gender,
+                        getDateValue(dataList.staffData.dob),
+                        `<label class="small">Code: <b>${dataList.location}</b></label>
+                         <label class="small">Location: <b>${dataList.locationData.name}</b></label> `,
+                        dataList.staffData.rolesModel.title,
+                        `<p class="${getStatusColor(dataList.staffData.accountStatus.title)}">${dataList.staffData.accountStatus.title}</p>`,
+                        `<div class="d-flex justify-content-between">
+                            <a href='Staff/StaffCreation?userId=${dataList.id}' class="btn bg-transparent text-info w-100">Edit</a>
+                            <button class="btn bg-transparent text-danger" onclick="deleteFunction('${dataList.id}')">Remove</button>
+                        </div>`
+                    ]).draw();
+                }
+            }
+        });
+        $("#deviceSpinner").addClass('d-none');
+    }
+
+    /*async function getData() {
+        await makeGetRequest(baseUrl + `getAllStaff`).then(response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+
+                    $('#dataTable').DataTable({
+                        "order": [[0, "desc"]],
+                        "bDestroy": true
+                    }).row.add([
+                        dataList.id,
+                        `${dataList.staffData.firstName} ${dataList.staffData.lastName}`,
+                        `<label class="small">Email: <b>${dataList.staffData.email}</b></label> <br />
+                         <label class="small">Phone Number: <b>${dataList.staffData.phoneNumber}</b></label> <br />
+                         <label class="small">NRC-Number: <b>${dataList.nrcNumber}</b></label> <br />`,
+                        dataList.staffData.gender,
+                        getDateValue(dataList.staffData.dob),
+                        `<label class="small">Code: <b>${dataList.location}</b></label>
+                         <label class="small">Location: <b>${dataList.locationData.name}</b></label> `,
+                        dataList.staffData.rolesModel.title,
+                        `<p class="${getStatusColor(dataList.staffData.accountStatus.title)}">${dataList.staffData.accountStatus.title}</p>`,
+                        `<div class="d-flex justify-content-between">
+                            <a href='Staff/StaffCreation?userId=${dataList.id}' class="btn bg-transparent text-info w-100">Edit</a>
+                            <button class="btn bg-transparent text-danger" onclick="deleteFunction('${dataList.id}')">Remove</button>
+                        </div>`
+                    ]).draw();
+                }
+            }
+        });
+    }*/
+
+    function editModel(index) {
+        var table = $('#dataTable').DataTable();
+
+        //get data
+        var id = table.row(index).data()[0];
+        var deviceBearer = table.row(index).data()[2];
+        var dateActivated = table.row(index).data()[3];
+        var lastSync = table.row(index).data()[4];
+        var status = table.row(index).data()[5];
+
+        //add data
+        $('input[name=deviceID]').val(id);
+        $('input[name=deviceBearer]').val(deviceBearer);
+        $('input[name=deviceStatus]').val(status);
+
+        //display model
+        $('#modal').modal('show');
+    }
+
+    async function editForm() {
+        $("#btnSpinner").removeClass('d-none');
+        var formData = $('#formData').serializeArray().reduce(function (obj, item) {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+        console.log(formData);
+        await simulateAsycCall();
+
+        //update record in table
+        var table = $('#dataTable').DataTable();
+        table.row(formData.id).data([
+            "Tiger Nixon",
+            "System Architect",
+            "$3,120",
+            "2011/04/25",
+            "Edinburgh",
+            "5421",
+            "Tiger Nixon",
+            "System Architect",
+            "$3,120",
+        ]).draw();
+
+        $("#btnSpinner").addClass('d-none');
+        $('#modal').modal('hide');
+        alertify.success("Record Updated");
+    }
+
+    async function deleteFunction(id) {
+        var confirmText = "Are you sure you want to delete this device?";
+        if (confirm(confirmText)) {
+            await makeGetRequest(baseUrl + `deleteStaff?id=${id}`).then(async response => {
+                if (response != null) {
+                    console.log(response);
+                    if (response.error) {
+                        alertify.error("Failed to Delete Staff");
+                    } else {
+                        alertify.success("Staff Successfuly Deleted");
+                        $('#dataTable').DataTable({ "bDestroy": true }).clear();
+                        await getData();
+                    }
+                }
+            });
+        }
+    }
+</script>

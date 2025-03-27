@@ -1,0 +1,350 @@
+﻿@page
+@model Crop_Management_System.Pages.Views.Transportation.LoadingOrderModel
+@{
+}
+
+<div>
+    <h4 class="mt-4">Loading Orders</h4>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item active"><a href="@Url.Page("/Index")" class="ml-1 mr-1">Dashboard</a> / Loading Orders</li>
+    </ol>
+
+    <div class="mb-4">
+        <div class="row">
+            <div class="col-md-6">
+                <a onclick="getProvinceData()" class="btn btn-outline-primary w-100" data-toggle="collapse" href="#locationFilter" role="button" aria-expanded="false"
+                   aria-controls="locationFilter">
+                    <h5>
+                        Location Filter
+                        <i class="icofont-dotted-down"></i>
+                    </h5>
+                </a>
+            </div>
+            <div class="col-md-6">
+                <a class="btn btn-outline-primary w-100" data-toggle="collapse" href="#dateFilter" role="button" aria-expanded="false"
+                   aria-controls="dateFilter">
+                    <h5>
+                        Date Filter
+                        <i class="icofont-dotted-down"></i>
+                    </h5>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-4">
+        <div id="locationFilter" class="collapse border border-info rounded p-3">
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="font-weight-bold">Province <i class="icofont-dotted-down"></i></label>
+                    <select class="form-control " name="provinceId" id="provinceId" onchange="provinceChangeListener()" required>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="font-weight-bold">
+                        <span id="districtSpinner" class="d-none spinner-border  spinner-grow-sm"></span>
+                        District
+                        <i class="icofont-dotted-down"></i>
+                    </label>
+                    <select class="form-control" name="districtId" id="districtId" onchange="districtChangeListener()" required>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="font-weight-bold">
+                        <span id="sateliteSpinner" class="d-none spinner-border  spinner-grow-sm"></span>
+                        Satellite
+                        <i class="icofont-dotted-down"></i>
+                    </label>
+                    <select class="form-control" name="SateliteId" id="sateliteId" onchange="sateliteChangeListener()" required>
+                    </select>
+                </div> 
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-4">
+        <div id="dateFilter" class="collapse border border-info rounded p-3">
+            <div class="row  ">
+                <div class="col-md-6">
+                    <label class="font-weight-bold">Start Date <i class="icofont-dotted-down"></i></label>
+                    <input id="startDate" type="date" class="form-control" value="" />
+                </div>
+                <div class="col-md-6">
+                    <label class="font-weight-bold">
+                        <span class="d-none spinner-border"></span>
+                        End Date
+                        <i class="icofont-dotted-down"></i>
+                    </label>
+                    <input id="endDate" type="date" class="form-control" value="" />
+                </div>
+                <div class="col-md-12 mt-4">
+                    <button onclick="dateFilter()" class="btn btn-outline-primary w-100">Filter</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- database table -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-table mr-1"></i>
+            Current Loading Orders
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>LO-Number</th>
+                            <th>loDate</th>
+                            <th>Location Details</th>
+                            <th>Crop Description</th>
+                            <th>Order Details</th>
+                            <th>Vendor Details</th>
+                            <th>Transportation Details</th>
+                            <th>LO-Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableData" class=""></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script> 
+    var today = new Date();
+    var responseList = [];
+    var startIndex = 0;
+    var batchSize = 100;
+    var dataTable;
+    var responseList = [];
+    var filterDate = true;
+    var filterLocation = true;
+
+
+    $(document).ready(async function () {
+        $('#startDate').val(getDateValue(today));
+        $('#endDate').val(getDateValue(today));
+        initializeDatatable();
+        //await getProvinceData();
+        displayMainBody();
+    });
+
+    function initializeDatatable() {
+        dataTable = $('#dataTable').DataTable({
+            dom: 'Bfrti',
+            buttons: [
+                'copy', {
+                    text: 'CSV', action: function (e, dt, node, config) {
+                        // Define headers for the Excel file
+                        const headers = [
+                            'loNumber', 'loDate', 'reqNum', 'fromLoc', 'fromLocName', 'toLoc', 'toLocName',
+                            'sContrLoc', 'sItemNo', 'sDesc', 'sUnit', 'sQtyBags', 'sQtyBagsMoved',
+                            'sQtyMT', 'sVendor', 'sVendorName', 'sVenAdr1', 'distance', 'rate',
+                            'rateType', 'amtBfrVAT', 'amtVAT', 'total', 'vatable', 'loPreparedBy',
+                            'loComplete', 'lOonhold', 'printed', 'manualLO'
+                        ];
+                        const csvData = [
+                            headers,
+                            ...responseList.map(row =>
+                                headers.map(header => row[header] !== undefined ? row[header] : '')  // Ensure the order of data matches headers
+                            )
+                        ];
+                        const csvContent = csvData.map(row => row.join(',')).join('\n');
+                        console.log(responseList);
+                        const csvBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                        const csvURL = URL.createObjectURL(csvBlob);
+                        const link = document.createElement('a');
+                        link.setAttribute('href', csvURL);
+                        link.setAttribute('download', 'LoadingOrders.csv');
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
+                }, {
+                    text: 'EXCEL', action: function (e, dt, node, config) {
+                        // Define headers for the Excel file
+                        const headers = [
+                            'loNumber', 'loDate', 'reqNum', 'fromLoc', 'fromLocName', 'toLoc', 'toLocName',
+                            'sContrLoc', 'sItemNo', 'sDesc', 'sUnit', 'sQtyBags', 'sQtyBagsMoved',
+                            'sQtyMT', 'sVendor', 'sVendorName', 'sVenAdr1', 'distance', 'rate',
+                            'rateType', 'amtBfrVAT', 'amtVAT', 'total', 'vatable', 'loPreparedBy',
+                            'loComplete', 'lOonhold', 'printed', 'manualLO'
+                        ];
+                        const csvData = [
+                            headers,
+                            ...responseList.map(row =>
+                                headers.map(header => row[header] !== undefined ? row[header] : '')  // Ensure the order of data matches headers
+                            )
+                        ];
+                        const csvContent = csvData.map(row => row.join(',')).join('\n');
+                        const csvBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                        const csvURL = URL.createObjectURL(csvBlob);
+                        const link = document.createElement('a');
+                        link.setAttribute('href', csvURL);
+                        link.setAttribute('download', 'LoadingOrders.csv');
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
+                }, 'pdf', 'print'
+            ],
+            "pageLength": 20000,
+            "columnDefs": [{ "width": "15%", "targets": 5 }],
+            "order": [[7, "desc"]],
+            "bDestroy": true,
+        });
+    }
+
+    async function getData(shouldFilter, dateFilter, locationFilter, startDate, endDate, location) {
+        $("#tableSpinner").removeClass('d-none');
+        var formData = {
+            "startDate": startDate,
+            "endDate": endDate,
+            "shouldFilter": shouldFilter,
+            "dateFilter": dateFilter,
+            "locationFilter": locationFilter,
+            "location": location,
+            "startIndex": startIndex,
+            "batchSize": batchSize
+        };
+
+        // Add rows to the DataTable after initialization
+        await makePostRequest(formData, baseUrl + "getAllLoadingOrders").then(response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    responseList.push(dataList);
+                    dataTable.row.add([
+                        dataList.loNumber,
+                        dataList.loDate,
+                        `<label class="small">From: <b>${dataList.fromLocName}</b></label> <br />
+                             <label class="small">TO: <b>${dataList.toLocName}</b></label> <br />`,
+                        `<label class="small">Item-No: <b>${dataList.sItemNo}</b></label> <br />
+                             <label class="small">Description: <b>${dataList.sDesc}</b></label> <br />`,
+                        `<label class="small">Unit: <b>${dataList.sUnit}</b></label> <br />
+                             <label class="small">Qty: <b>${dataList.sQtyBags}</b></label> <br />
+                             <label class="small">Qty-Moved: <b>${dataList.sQtyBagsMoved}</b></label> <br />
+                             <label class="small">Qty-Mt: <b>${dataList.sQtyMT}</b></label> <br />`,
+                        `<label class="small">Vendor: <b>${dataList.sVendor}</b></label> <br />
+                             <label class="small">Name: <b>${dataList.sVendorName}</b></label> <br />
+                             <label class="small">Address: <b>${dataList.sVenAdr1}</b></label> <br />`,
+                        `<label class="small">Distance: <b>${dataList.distance}</b></label> <br />
+                             <label class="small">Rate: <b>${dataList.rate}</b></label> <br />
+                             <label class="small">Total: <b>${dataList.total}</b></label> <br />`,
+                        `<label class="small">Prepared-By: <b>${dataList.loPreparedBy}</b></label> <br />
+                             <label class="small">Complete-Status: <b>${highlightStatus(dataList.loComplete)}</b></label> <br />`
+                    ]).draw();
+                }
+            }
+        });
+
+        $("#tableSpinner").addClass('d-none');
+    }
+
+    //date Filter
+    async function dateFilter() {
+        var startDate = $('#startDate').val();
+        var endDate = $('#endDate').val();
+        var sateliteValue = document.getElementById("sateliteId").value;
+        var filterLocation = true;
+        if (sateliteValue == null || sateliteValue == '') {
+            filterLocation = false;
+        }
+        //$('#dataTable').DataTable({ "bDestroy": true }).clear();
+        startIndex = 0;
+        responseList = [];
+        dataTable.clear().draw();
+        filterDate = true;
+        await getData(true, filterDate, filterLocation, startDate, endDate, sateliteValue);
+    }
+
+    async function getProvinceData() {
+        await makeGetRequest(baseUrl + "getProvinces").then(async response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#provinceId').append($('<option>', {
+                        value: dataList.location.trim(),
+                        text: dataList.name.trim(),
+                    }));
+                }
+                await provinceChangeListener();
+            }
+        });
+    }
+
+    async function provinceChangeListener() {
+        $('#districtId').empty();
+        $('#dataTable').DataTable({ "bDestroy": true }).clear();
+        $("#districtSpinner").removeClass('d-none');
+        dataTable.clear().draw();
+        responseList = [];
+
+
+        var provinceValue = document.getElementById("provinceId").value;  
+        await makeGetRequest(baseUrl + `getDistricts?provinceCode=${provinceValue}`).then(async response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#districtId').append($('<option>', {
+                        value: dataList.location.trim(),
+                        text: dataList.name.trim(),
+                    }));
+                }
+                await districtChangeListener();
+            }
+        });
+        $("#districtSpinner").addClass('d-none');
+    }
+
+    async function districtChangeListener() {
+        $('#sateliteId').empty();
+        $('#dataTable').DataTable({ "bDestroy": true }).clear();
+        $("#sateliteSpinner").removeClass('d-none');
+        dataTable.clear().draw();
+        responseList = [];
+
+        var districtValue = document.getElementById("districtId").value; 
+        await makeGetRequest(baseUrl + `getSatelites?disctrictCode=${districtValue}`).then(async response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#sateliteId').append($('<option>', {
+                        value: dataList.location.trim(),
+                        text: dataList.name.trim(),
+                    }));
+                }
+                await sateliteChangeListener();
+            }
+        });
+        $("#sateliteSpinner").addClass('d-none');
+    }
+
+    async function sateliteChangeListener() { 
+        $("#deviceSpinner").removeClass('d-none');
+        //$('#dataTable').DataTable({ "bDestroy": true }).clear();
+        responseList = [];
+
+        var sateliteValue = document.getElementById("sateliteId").value;
+        var startDate = $('#startDate').val();
+        var endDate = $('#endDate').val();
+        startIndex = 0;
+        dataTable.clear().draw();
+        initializeDatatable();
+
+        // Clear previous DataTable and reset responseList
+        //$('#dataTable').DataTable({ "bDestroy": true }).clear();
+        await getData(true, filterDate, true, startDate, endDate, sateliteValue);
+        $("#deviceSpinner").addClass('d-none');
+    }
+
+    function highlightStatus(val) {
+        if (val == 'Y') {
+            return '<i class="text-success">Y</i>'
+        } else {
+            return '<i class="text-danger">N</i>'
+        }
+    }
+</script>

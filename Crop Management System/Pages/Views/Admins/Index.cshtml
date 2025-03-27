@@ -1,0 +1,190 @@
+﻿@page
+@model Crop_Management_System.Pages.Views.Admins.IndexModel
+@{
+}
+
+<div>
+    <h4 class="mt-4">Admins Memebers</h4>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item active"><a href="@Url.Page("/Index")" class="ml-1 mr-1">Dashboard</a> / Admins</li>
+    </ol>
+
+    <div class="">
+        <a href="@Url.Page("/Views/Admins/AdminsCreation",new { status = 1 })"
+           class="btn btn-primary w-100 font-weight-bold">Add Admins</a>
+    </div>
+
+    <!-- database table -->
+    <div class="mt-4 card mb-4">
+        <div class="card-header">
+            <i class="fas fa-table mr-1"></i>
+            Current Staff Memebers
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Names</th>
+                            <th>Contact Information</th>
+                            <th>District</th>
+                            <th>Role</th>
+                            <th>Account Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableData" class=""></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modal" class="modal fade ModelDialog" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <iframe name="dFrame" id="dummyframe" style="display: none;"></iframe>
+            <form id="formData" target="dFrame" onsubmit="editForm()" enctype="multipart/form-data">
+                <input type="hidden" name="id" />
+                <input type="hidden" name="dbOperations" value="Create" />
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Device Modal</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="font-weight-bold">Device ID</label>
+                        <input type="text" class="form-control" name="deviceID" required autocomplete="off">
+                        <label class="font-weight-bold">Device Bearer <i class="icofont-dotted-down"></i></label>
+                        <select class="form-control" name="deviceBearer">
+                            <option value="1">jane  Doe</option>
+                            <option value="1">Michael Sama  Doe</option>
+                            <option value="1">JAke Paul  Doe</option>
+                        </select>
+                        <label class="font-weight-bold">Device Status <i class="icofont-dotted-down"></i></label>
+                        <select class="form-control" name="deviceStatus">
+                            <option value="1">Active</option>
+                            <option value="1">On Hold</option>
+                            <option value="1">Deactive</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="btnEdit" type="submit" class="btn btn-primary">
+                        <span id="btnSpinner" class="d-none spinner-border  spinner-grow-sm" role="status" aria-hidden="true"></span>
+                        Save changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    var url;
+
+    $(document).ready(async function () {
+        var userRole = getCookie("userRole");
+
+        if (userRole != "Admin") {
+            window.location.href = "/Unauthorized";
+        }
+        await getData();
+        displayMainBody();
+    });
+
+    async function getData() {
+        await makeGetRequest(baseUrl + `getAllAdmins`).then(response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#dataTable').DataTable({
+                        "order": [[0, "asc"]],
+                        "bDestroy": true
+                    }).row.add([
+                        dataList.id,
+                        `${dataList.userData.firstName} ${dataList.userData.lastName}`,
+                        `<label class="small">Email: <b>${dataList.userData.email}</b></label> <br />
+                            <label class="small">NRC-Number: <b>${dataList.nrcNumber}</b></label> <br />`,
+                        dataList.district == null ? "All" : dataList.district,
+                        dataList.userData.rolesModel.title,
+                        `<p class="${getStatusColor(dataList.userData.accountStatus.title)}">${dataList.userData.accountStatus.title}</p>`,
+                        `<div class="d-flex justify-content-between">
+                            <a href='Admins/AdminsCreation?userId=${dataList.id}' class="btn bg-transparent text-info w-100">Edit</a>
+                            <button class="btn bg-transparent text-danger" onclick="deleteFunction('${dataList.id}')">Remove</button>
+                        </div>`
+                    ]).draw();
+                }
+            }
+        });
+    }
+
+    function editModel(index) {
+        var table = $('#dataTable').DataTable();
+
+        //get data
+        var id = table.row(index).data()[0];
+        var deviceBearer = table.row(index).data()[2];
+        var dateActivated = table.row(index).data()[3];
+        var lastSync = table.row(index).data()[4];
+        var status = table.row(index).data()[5];
+
+        //add data
+        $('input[name=deviceID]').val(id);
+        $('input[name=deviceBearer]').val(deviceBearer);
+        $('input[name=deviceStatus]').val(status);
+
+        //display model
+        $('#modal').modal('show');
+    }
+
+    async function editForm() {
+        $("#btnSpinner").removeClass('d-none');
+        var formData = $('#formData').serializeArray().reduce(function (obj, item) {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+        console.log(formData);
+        await simulateAsycCall();
+
+        //update record in table
+        var table = $('#dataTable').DataTable();
+        table.row(formData.id).data([
+            "Tiger Nixon",
+            "System Architect",
+            "$3,120",
+            "2011/04/25",
+            "Edinburgh",
+            "5421",
+            "Tiger Nixon",
+            "System Architect",
+            "$3,120",
+        ]).draw();
+
+        $("#btnSpinner").addClass('d-none');
+        $('#modal').modal('hide');
+        alertify.success("Record Updated");
+    }
+
+    async function deleteFunction(id) {
+        var confirmText = "Are you sure you want to delete this device?";
+        if (confirm(confirmText)) {
+            await makeGetRequest(baseUrl + `deleteAdmins?id=${id}`).then(async response => {
+                if (response != null) {
+                    console.log(response);
+                    if (response.error) {
+                        alertify.error("Failed to Delete Staff");
+                    } else {
+                        alertify.success("Admins Successfuly Deleted");
+                        $('#dataTable').DataTable({ "bDestroy": true }).clear();
+                        await getData();
+                    }
+                }
+            });
+        }
+    }
+</script>

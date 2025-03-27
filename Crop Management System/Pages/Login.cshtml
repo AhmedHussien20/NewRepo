@@ -1,0 +1,146 @@
+﻿@page
+@model Crop_Management_System.Pages.LoginModel
+@{
+    Layout = null;
+}
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+
+    @*CSS*@
+    <link rel="stylesheet" href="~/css/site.css" />
+
+    @*dark theme*@
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    @*icofont*@
+    <link rel="stylesheet" href="~/lib/icofont/icofont.min.css" />
+
+    @*alertify*@
+    <script src="~/lib/alertifyjs/alertify.min.js"></script>
+    <link href="~/lib/alertifyjs/css/alertify.min.css" rel="stylesheet" />
+    <link href="~/lib/alertifyjs/css/themes/default.min.css" rel="stylesheet" />
+</head>
+<body class="bg-light">
+    <div id="layoutAuthentication">
+        <div id="layoutAuthentication_content">
+            <main>
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-5">
+                            <div class="card shadow-lg border-0 rounded-lg mt-5">
+                                <div class="text-center card-header">
+                                    <div>
+                                        <img src="~/images/fra-logo.png" width="300" height="100" alt="No Image Found" />
+                                    </div>
+                                    <div>
+                                        <h3 class=" font-weight-light my-4">Crop Management Portal</h3>
+                                    </div>
+                                </div>
+                                @if (Model.error)
+                                {
+                                <div class="" id="errorMessage">
+                                    <h5 class="text-danger p-4 text-center">
+                                        Session Expired, Please sign in with valid account
+                                    </h5>
+                                </div>
+                                }
+                                <div class="d-none" id="errorMessage">
+                                    <h5 class="text-danger p-4 text-center">Account not found, <br />Please check Email & Password</h5>
+                                </div>
+                                <div class="card-body">
+                                    <iframe name="dummyframe" id="dummyframe" style="display: none;"></iframe>
+                                    <form id="formData" target="dummyframe" onsubmit="validateLogin()">
+                                        <div class="form-group">
+                                            <label class="small mb-1" for="inputEmailAddress">Email</label>
+                                            <input id="merchantCode" name="email" class="form-control py-4" type="text"
+                                                   placeholder="Enter Email" value="" required />
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="small mb-1" for="inputPassword">Password</label>
+                                            <input id="secretCode" name="password" class="form-control py-4" type="password"
+                                                   placeholder="Enter Password" value="" required />
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="custom-control custom-checkbox">
+                                                <input class="custom-control-input" id="rememberPasswordCheck" type="checkbox" />
+                                                <label class="custom-control-label" for="rememberPasswordCheck">Remember password</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group d-flex align-items-center justify-content-between mt-4 mb-0">
+                                            <a class="small" asp-area="" asp-page="/Views/Account/passwordReset" asp-route-accountReset="true">Forgot Password?</a>
+                                            <button class="btn btn-primary" id="log_smt_btn" type="submit">
+                                                <span id="loginBtnSpinner" class="d-none spinner-border  spinner-grow-sm" role="status" aria-hidden="true"></span>
+                                                Login
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="card-footer text-center">
+                                    <div class="small"><a href='#'>Need an account? Contact an administrator</a></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+</body>
+</html>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+
+<script>
+    async function validateLogin() {
+        $("#loginBtnSpinner").removeClass('d-none');
+        $("#errorMessage").fadeOut().addClass('d-none');
+
+        var formData = $('#formData').serializeArray().reduce(function (obj, item) {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+
+        await makePostRequest(formData, baseUrl + "portalLogin").then(async response => {
+            console.log(response);
+            if (response.error) {
+                alertify.error('Unsuccessful - ' + response.errorMessage);
+                console.log(response.errorMessage);
+                $("#errorMessage").fadeIn().removeClass('d-none');
+            } else {
+                alertify.success("Login Successful - Processing");
+
+                var userId = response.results.id;
+                var userEmail = response.results.email;
+                var userName = response.results.firstName + ' ' + response.results.lastName;
+                var userRole = response.results.rolesModel.title;
+                var district = response.results.district;
+                var province = response.results.province;
+                var passwordStatus = response.results.isDefaultPassword;
+
+                // add to cookie
+                setCookie("userId", userId, 10);
+                setCookie("userName", userName, 10);
+                setCookie("userEmail", userEmail, 10);
+                setCookie("userRole", userRole, 10);
+                setCookie("district", district, 10);
+                setCookie("province", province, 10);
+                console.log(district);
+                console.log(province);
+                if (passwordStatus) {
+                    //reset password
+                    location.href = "/Views/Account/passwordReset";
+                } else {
+                    location.href = "/Index";
+                }
+            }
+        });
+
+        $("#loginBtnSpinner").addClass('d-none');
+    }
+</script>

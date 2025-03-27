@@ -1,0 +1,100 @@
+﻿@page
+@model Crop_Management_System.Pages.Views.Account.ProfileModel
+@{
+}
+
+<div>
+    <div>
+        <h4 class="mt-4">Profile</h4>
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item active"><a href="@Url.Page("/Index")" class="ml-1 mr-1">Dashboard</a> / Profile </li>
+        </ol>
+    </div>
+
+    <div class="mt-4">
+        <div>
+            <iframe name="dFrame" id="dummyframe" style="display: none;"></iframe>
+            <form id="formData" target="dFrame" onsubmit="submitForm()" enctype="multipart/form-data">
+                <div class="mt-4">
+                    <h5>Personal Information</h5>
+                    <div class="border border-info rounded p-3">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="font-weight-bold">First Name</label>
+                                <input type="text" class="form-control" name="firstName" disabled required autocomplete="off">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="font-weight-bold">Last Name</label>
+                                <input type="text" class="form-control" name="lastName" disabled required autocomplete="off">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="font-weight-bold">Gender</label>
+                                <input type="text" class="form-control" name="gender" disabled id="gender" required autocomplete="off">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="font-weight-bold  ">Date Of Birth</label>
+                                <input type="text" class="form-control" name="dob" disabled required autocomplete="off">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h5>Business Information</h5>
+                    <div class="border border-info rounded p-3">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="font-weight-bold">Phone Number</label>
+                                <input type="tel" class="form-control" name="phoneNumber" disabled autocomplete="off">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="font-weight-bold">Email</label>
+                                <input type="email" class="form-control" name="email" disabled autocomplete="off">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="font-weight-bold">Account Role</label>
+                                <input minlength="11" maxlength="13" type="text" class="form-control" name="role" disabled autocomplete="off">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="font-weight-bold">Account Status</label>
+                                <input minlength="11" maxlength="13" type="text" class="form-control" name="status" disabled autocomplete="off">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <a class="nav-link btn btn-primary text-white w-100 mt-4 mb-4" asp-area="" asp-page="/Views/Account/passwordReset">
+                        Update Password
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(async function () {
+        await getData();
+        displayMainBody();
+    });
+
+    async function getData() {
+        var userId = getCookie("userId");
+        await makeGetRequest(baseUrl + `getUsers?id=${userId}`).then(async response => {
+            if (response != null) {
+                if (response.results != null) {
+                    var userData = response.results;
+
+                    $('input[name=firstName]').val(userData.firstName);
+                    $('input[name=lastName]').val(userData.lastName);
+                    $('input[name=gender]').val(userData.gender);
+                    $('input[name=dob]').val(userData.dob);
+                    $('input[name=phoneNumber]').val(userData.phoneNumber);
+                    $('input[name=role]').val(userData.rolesModel.title);
+                    $('input[name=status]').val(userData.accountStatus.title);
+                    $('input[name=email]').val(userData.email);
+                }
+            }
+        });
+    }
+</script>

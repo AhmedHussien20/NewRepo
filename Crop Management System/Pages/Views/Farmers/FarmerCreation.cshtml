@@ -1,0 +1,273 @@
+﻿@page
+@model Crop_Management_System.Pages.Views.Farmers.FarmerCreationModel
+@{
+}
+
+<div>
+    <div>
+        @if (@Model.updateData)
+        {
+            <h4 class="mt-4">Farmer Update</h4>
+        }
+        else
+        {
+            <h4 class="mt-4">Farmer Creation</h4>
+        }
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item active"><a href="@Url.Page("/Views/Farmers/Index")" class="ml-1 mr-1">Farmer</a> / Staff Creation</li>
+        </ol>
+    </div>
+
+    <div class="mt-4">
+        <div>
+            <iframe name="dFrame" id="dummyframe" style="display: none;"></iframe>
+            <form id="formData" target="dFrame" onsubmit="submitForm()" enctype="multipart/form-data">
+                <input type="hidden" name="createdBy" value="" id="createdBy">
+                <div>
+                    <h5>Personal Information</h5>
+                    <div class="border border-info rounded p-3">
+                        <div class="row">
+                            <div class="col-md-6 p-1">
+                                <label class="font-weight-bold">Full Names</label>
+                                <input type="text" class="form-control" name="names" required autocomplete="off">
+                            </div>
+                            <div class="col-md-6 p-1">
+                                <label class="font-weight-bold ">Phone Number</label>
+                                <input type="tel" class="form-control" name="phoneNumber" required autocomplete="off">
+                            </div>
+                            <div class="col-md-6 p-1">
+                                <label class="font-weight-bold">Gender</label>
+                                <select class="form-control" name="gender" id="gender">
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 p-1">
+                                <label class="font-weight-bold ">Date Of Birth</label>
+                                <input type="date" class="form-control" name="dob" required>
+                            </div>
+                            <div class="col-md-6 p-1">
+                                <label class="font-weight-bold ">NRC Number</label>
+                                <input type="text" class="form-control" name="nrcNumber" required autocomplete="off">
+                            </div>
+                            <div class="col-md-6 p-1">
+                                <label class="font-weight-bold">Verified<i class="icofont-dotted-down"></i></label>
+                                <select class="form-control" name="verifiedString" id="verifiedString">
+                                    <option value=true>True</option>
+                                    <option value=false>False</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 p-1">
+                                <label class="font-weight-bold">Province<i class="icofont-dotted-down"></i></label>
+                                <select class="form-control" name="province" id="province" onchange="provinceChangeListener()">
+                                </select>
+                            </div>
+                            <div class="col-md-6 p-1">
+                                <label class="font-weight-bold">District<i class="icofont-dotted-down"></i></label>
+                                <select class="form-control" name="district" id="district">
+                                </select>
+                            </div>
+                            @*<div class="col-md-12 p-1">5
+                                    <label class="font-weight-bold ">Role<i class="icofont-dotted-down"></i></label>
+                                    <select class="form-control" name="roleId" id="roleId">
+                                    </select>
+                                </div>*@
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mt-4 mb-4">
+                        <span id="btnSpinner" class="d-none spinner-border  spinner-grow-sm" role="status" aria-hidden="true"></span>
+                        SUBMIT
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var accountId;
+
+    $(document).ready(async function () {
+        var userRole = getCookie("userRole");
+
+        if (userRole != "Admin") {
+            window.location.href = "/Unauthorized";
+        }
+        await getData();
+        displayMainBody();
+
+        var userName = getCookie("userName");
+        $('#createdBy').val(userName);
+    });
+
+    async function getData() {
+        await makeGetRequest(baseUrl + `getAllRoles`).then(async response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#roleId').append($('<option>', {
+                        value: dataList.id,
+                        text: dataList.title,
+                    }));
+                }
+                getSelectValue("roleId", "Farmer");
+            }
+        });
+
+        $('#province').empty();
+        await makeGetRequest(baseUrl + "getProvinces").then(async response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#province').append($('<option>', {
+                        value: dataList.location,
+                        text: dataList.location +' - '+dataList.name,
+                    }));
+                }
+            }
+        });
+        await provinceChangeListener();
+
+        @if (@Model.updateData)
+        {
+            @Html.Raw("await getUserDataForUpdate()");
+        }
+    }
+
+    async function provinceChangeListener() {
+        $('#district').empty();
+
+        var provinceValue = document.getElementById("province").value;
+        await makeGetRequest(baseUrl + `getDistricts?provinceCode=${provinceValue}`).then(async response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#district').append($('<option>', {
+                        value: dataList.location.trim(),
+                        text: dataList.location + ' - ' + dataList.name,
+                    }));
+                }
+                //getSelectValue("districtId", District);
+            }
+        });
+    }
+
+    async function getUserDataForUpdate() {
+        var userID = "@Model.userId";
+        var farmerDistrict;
+        await makeGetRequest(baseUrl + `getFarmer?id=${userID}`).then(async response => {
+            if (response != null) {
+                if (!response.error) {
+                    var dataList = response.results;
+                    accountId = dataList.id;
+                    farmerDistrict = dataList.district;
+                    $('input[name=password]').prop("disabled", "disabled");
+                    $('input[name=names]').val(dataList.names);
+                    $('input[name=nrcNumber]').val(dataList.nrcNumber);
+                    $('input[name=phoneNumber]').val(dataList.phoneNumber);
+                    $('input[name=dob]').val(getDateValue(dataList.dob));
+                    getSelectValue("province", dataList.province);
+                    getSelectValue("gender", dataList.gender);
+                }
+            }
+        });
+        await provinceChangeListener();
+        getSelectValue("district", farmerDistrict);
+    }
+
+    async function submitForm() {
+        $("#btnSpinner").removeClass('d-none');
+        var formData = $('#formData').serializeArray().reduce(function (obj, item) {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+        formData.verifies = false;
+
+        var formArray = [formData];
+        var formArrayObject = {
+            results: formArray
+        } 
+
+        @if (@Model.updateData)
+        {
+            @Html.Raw("console.log(formData);");
+            @Html.Raw("await updateStaff(formData);");
+        }
+        else {
+            @Html.Raw("console.log(formArrayObject);"); 
+            @Html.Raw("await createStaff(formArrayObject);");
+        }
+    }
+
+    async function getStaffbyNrc(formData) {
+        await makeGetRequest(baseUrl + `getFarmerByNrc?nrc=${formData.nrcNumber}`).then(async response => {
+            if (response != null) {
+                if (response.error) {
+                    await createUserAccount(formData);
+                } else {
+                    $("#btnSpinner").addClass('d-none');
+                    alertify.error('Staff Account already exists');
+                }
+            }
+        });
+    }
+
+    async function createUserAccount(formData) {
+        await makePostRequest(formData, baseUrl + "createUsers").then(async response => {
+            console.log(response);
+            if (response.error) {
+                alertify.error('Unsuccessful - ' + response.errorMessage);
+                console.log(response.errorMessage);
+                $("#btnSpinner").addClass('d-none');
+            } else {
+                var id = response.results;
+                alertify.success("User Profile Created, Sending Registration Email...");
+                await sendMail(formData.email);
+                await createStaff(id, formData)
+            }
+        });
+    }
+
+    async function createStaff( formData) {
+        await makePostRequest(formData, baseUrl + "createFarmer").then(async response => {
+            console.log(response);
+            if (response.error) {
+                alertify.error('Unsuccessful - ' + response.errorMessage);
+                console.log(response.errorMessage);
+            } else {
+                alertify.success("Farmer Created");
+            }
+            $("#userResponse").fadeIn().removeClass('d-none');
+        });
+        $("#btnSpinner").addClass('d-none');
+    }
+
+    async function updateStaff(formData) {
+        var userID = "@Model.userId";
+
+        formData.id = accountId;
+        await makePostRequest(formData, baseUrl + "updateUsers").then(async response => {
+            console.log(response);
+            if (response.error) {
+                alertify.error('Unsuccessful - ' + response.errorMessage);
+                console.log(response.errorMessage);
+            } else {
+                alertify.success("Account Updated");
+            }
+        });
+
+        formData.id = userID;
+        await makePostRequest(formData, baseUrl + "updateFarmer").then(async response => {
+            console.log(response);
+            if (response.error) {
+                alertify.error('Unsuccessful - ' + response.errorMessage);
+                console.log(response.errorMessage);
+            } else {
+                alertify.success("Farmer Details Updated");
+            }
+        });
+        $("#btnSpinner").addClass('d-none');
+    }
+</script>

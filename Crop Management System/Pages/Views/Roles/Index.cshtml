@@ -1,0 +1,280 @@
+﻿@page
+@model Crop_Management_System.Pages.Views.Roles_Permissions.IndexModel
+@{
+}
+
+<div>
+    <h4 class="mt-4">Roles</h4>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item active"><a href='@Url.Action("Index","Home")' class="ml-1 mr-1">Dashboard</a> / Roles</li>
+    </ol>
+
+    <div class="mt-4">
+        <button class="btn btn-primary w-100" data-toggle="modal" data-target="#modal">Add Role</button>
+    </div>
+
+    <!-- database table -->
+    <div class="mt-4 card mb-4">
+        <div class="card-header align-items-center d-flex justify-content-between">
+            Current Roles
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>title</th> 
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableData" class=""></tbody>
+                </table>
+            </div>
+        </div>
+    </div>  
+</div>
+
+@* Crop Modal *@
+<div id="modal" class="modal fade ModelDialog" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <iframe name="dFrame" id="dummyframe" style="display: none;"></iframe>
+            <form id="formData" target="dFrame" enctype="multipart/form-data">
+                <input type="hidden" name="id" value="0" />
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Crop Modal</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group" contenteditable="true">
+                        <label class="font-weight-bold">Title</label>
+                        <input type="text" class="form-control" name="title" required autocomplete="off">
+                        
+                    </div>
+
+                    <div class="form-group mt-4;">
+                        <label class="font-weight-bold">Permissions</label>
+
+                        <!-- Search input -->
+                        <input type="text" id="searchPermissions" class="form-control mb-2" placeholder="Search permissions..." autocomplete="off">
+
+                        <!-- Multi-Select Dropdown -->
+                        <select id="permissionsSelect" class="form-control" multiple size="5">
+                            <option value="1">Permission 1</option>
+                            <option value="2">Permission 2</option>
+                            <option value="3">Permission 3</option>
+                            <option value="4">Permission 4</option>
+                            <option value="5">Permission 5</option>
+                            <option value="6">Permission 6</option>
+                            <option value="7">Permission 7</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="btnCreateRole" type="button" class="btn btn-primary" onclick="categoriesHandler(false)">
+                        <span id="btnSpinner" class="d-none spinner-border  spinner-grow-sm" role="status" aria-hidden="true"></span>
+                        Save changes
+                    </button>
+                    <button id="btnUpdateRole" type="button" class="btn btn-warning d-none" onclick="categoriesHandler(true)">
+                        <span id="btnSpinnerUpdate" class="d-none spinner-border  spinner-grow-sm" role="status" aria-hidden="true"></span>
+                        Update
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+ 
+<script>
+    var url;
+
+    $(document).ready(async function () {
+        document.getElementById("searchPermissions").addEventListener("keyup", function () {
+            let filter = this.value.toLowerCase();
+            let options = document.getElementById("permissionsSelect").options;
+
+            for (let option of options) {
+                let text = option.text.toLowerCase();
+                option.style.display = text.includes(filter) ? "" : "none";
+            }
+        });
+        await getData();
+        displayMainBody();
+    });
+
+    async function getData() {
+        $('#dataTable').DataTable({ "bDestroy": true }).clear();
+
+        await makeGetRequest(baseUrl + "getAllRoles").then(response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#dataTable').DataTable({
+                        "order": [[0, "desc"]],
+                        "bDestroy": true
+                    }).row.add([
+                        dataList.id,
+                        dataList.title, 
+                        `<div class="d-flex justify-content-around">
+                            <button class="btn bg-transparent text-info" onclick="editModel('${i}','Roles')">Edit</button>
+                            <button class="btn bg-transparent text-danger" onclick="deleteFunction('${dataList.id}')">Remove</button>
+                        </div>`,
+                    ]).draw();
+                }
+            }
+        });
+    }
+
+    // Populate dropdown
+    function populatePermissions(selectedPermissions = [], availablePermissions = []) {
+        let dropdown = $("#permission-dropdown");
+        dropdown.empty(); // Clear existing options
+
+        availablePermissions.forEach(permission => {
+            let isSelected = selectedPermissions.includes(permission.id) ? "selected" : "";
+            dropdown.append(`<option value="${permission.id}" ${isSelected}>${permission.name}</option>`);
+        });
+
+        // Initialize Select2 for search functionality
+        dropdown.select2({
+            placeholder: "Search and select permissions...",
+            allowClear: true
+        });
+
+        updateSelectedPermissions();
+    }
+
+    // Handle selection change
+    $("#permission-dropdown").on("change", function () {
+        updateSelectedPermissions();
+    });
+
+    // Display selected permissions with remove button
+    function updateSelectedPermissions() {
+        let selectedValues = $("#permission-dropdown").val() || [];
+        let container = $("#selected-permissions");
+        container.empty();
+
+        selectedValues.forEach(id => {
+            let permission = availablePermissions.find(p => p.id == id);
+            if (permission) {
+                container.append(`
+                    <span class="badge badge-primary m-1">
+                        ${permission.name} 
+                        <span class="ml-2 text-white" style="cursor:pointer;" onclick="removePermission(${permission.id})">x</span>
+                    </span>
+                `);
+            }
+        });
+    }
+
+    // Remove permission from selected list
+    function removePermission(permissionId) {
+        let selectedValues = $("#permission-dropdown").val() || [];
+        selectedValues = selectedValues.filter(id => id != permissionId);
+        $("#permission-dropdown").val(selectedValues).trigger("change");
+    }
+
+    async function editModel(index, src) {
+        $(`#btnUpdate${src}`).removeClass('d-none');
+        $(`#btnCreate${src}`).addClass('d-none');
+
+        switch (src) {
+            case "Roles":
+                var table = $('#dataTable').DataTable();
+
+                // Get role data
+                var id = table.row(index).data()[0];
+                var title = table.row(index).data()[1];
+                var assignedPermissions = [];
+
+                // Fetch role permissions
+                await makeGetRequest(baseUrl + "getRolesPermissions?id=" + id).then(response => {
+                    if (response != null) {
+                        assignedPermissions = response.results.map(p => p.name);
+                    }
+                });
+
+                // Fetch all available permissions
+                let allPermissions = [];
+                await makeGetRequest(baseUrl + "getAllPermissions").then(response => {
+                    if (response != null) {
+                        allPermissions = response.results.map(p => p.name);
+                    }
+                });
+
+                // Populate fields
+                $('input[name=id]').val(id);
+                $('input[name=title]').val(title);
+
+                //populatePermissions(assignedPermissions, allPermissions);
+                // Show modal
+                $('#modal').modal('show');
+        }
+    }
+
+    async function categoriesHandler(update) {
+        var url = "createRoles";
+        var spinnerClass = "#btnSpinner";
+        if (update) {
+            url = "updateRoles";
+            spinnerClass = "#btnSpinnerUpdate"
+        }
+
+        $(spinnerClass).removeClass('d-none');
+        var formData = $('#formData').serializeArray().reduce(function (obj, item) {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+        console.log(formData);
+
+        await makePostRequest(formData, baseUrl + url).then(async response => {
+            console.log(response);
+            if (response.error) {
+                alertify.error('Unsuccessful - ' + response.errorMessage);
+                console.log(response.errorMessage);
+            } else {
+                alertify.success("Role Updated");
+                $('#modal').modal('hide');
+                await getData();
+            }
+        });
+
+        //update record in table
+        $(spinnerClass).addClass('d-none');
+    }
+
+    async function deleteFunction(id) {
+        var confirmText = "Are you sure you want to delete this role?";
+        if (confirm(confirmText)) {
+            await makeGetRequest(baseUrl + `deleteRoles?id=${id}`).then(async response => {
+                if (response != null) {
+                    console.log(response);
+                    if (response.error) {
+                        alertify.error("Failed to Delete Role");
+                    } else {
+                        alertify.success("Role Successfuly Deleted");
+                        $('#dataTable').DataTable({ "bDestroy": true }).clear();
+                        await getData();
+                    }
+                }
+            });
+        }
+    }
+
+    function resetButtons(src) {
+        var elements = document.getElementsByTagName("input");
+        for (var ii = 0; ii < elements.length; ii++) {
+            if (elements[ii].type == "text") {
+                elements[ii].value = "";
+            }
+        }
+        $(`#btnCreate${src}`).removeClass('d-none');
+        $(`#btnUpdate${src}`).addClass('d-none');
+    }
+</script>
+

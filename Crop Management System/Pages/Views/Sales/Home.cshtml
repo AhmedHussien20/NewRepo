@@ -1,0 +1,1075 @@
+﻿@page
+@model Crop_Management_System.Pages.Transactions.IndexModel
+@{
+}
+
+<div>
+    <h4 class="mt-4">Sales</h4>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item active"><a href='@Url.Action("Home","Index")' class="ml-1 mr-1">Dashboard</a> / Sales</li>
+    </ol>
+
+    <!-- colored cards stats -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-primary text-white mb-4">
+                <div class="card-body">
+                    <!-- fetch user# -->
+                    <h4>Transactions</h4>
+                    <span class="font-weight-bold" id="transNum">00<br>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-warning text-white mb-4">
+                <div class="card-body">
+                    <h4>Pending Transactions</h4>
+                    <span class="font-weight-bold" id="pendingTrans">00<br>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-success text-white mb-4">
+                <div class="card-body">
+                    <h4>Approved Transactions</h4>
+                    <span class="font-weight-bold" id="approvedTrans">00<br>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-info text-white mb-4">
+                <div class="card-body">
+                    <h4>Crop Value</h4>
+                    <span id="revenuNum"><b>K 00,000</b><br>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Filters *@
+    <div class="mb-4">
+        <div class="row">
+            <div class="col-md-6">
+                <a onclick="getProvinceData()" class="btn btn-outline-primary w-100" data-toggle="collapse" href="#locationFilter" role="button" aria-expanded="false"
+                   aria-controls="locationFilter">
+                    <h5>
+                        Location Filter
+                        <i class="icofont-dotted-down"></i>
+                    </h5>
+                </a>
+            </div>
+            <div class="col-md-6">
+                <a class="btn btn-outline-primary w-100" data-toggle="collapse" href="#dateFilter" role="button" aria-expanded="false"
+                   aria-controls="dateFilter">
+                    <h5>
+                        Date Filter
+                        <i class="icofont-dotted-down"></i>
+                    </h5>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @* Location Filter *@
+    <div class="mb-4">
+        <div id="locationFilter" class="collapse border border-info rounded p-3">
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="font-weight-bold">Province <i class="icofont-dotted-down"></i></label>
+                    <select class="form-control " name="provinceId" id="provinceId" onchange="provinceChangeListener()" required>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="font-weight-bold">
+                        <span id="districtSpinner" class="d-none spinner-border  spinner-grow-sm"></span>
+                        District
+                        <i class="icofont-dotted-down"></i>
+                    </label>
+                    <select class="form-control" name="districtId" id="districtId" onchange="districtChangeListener()" required>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="font-weight-bold">
+                        <span id="sateliteSpinner" class="d-none spinner-border  spinner-grow-sm"></span>
+                        Satellite
+                        <i class="icofont-dotted-down"></i>
+                    </label>
+                    <select class="form-control" name="SateliteId" id="sateliteId" onchange="sateliteChangeListener()" required>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Date Filter *@
+    <div class="mb-4">
+        <div id="dateFilter" class="collapse border border-info rounded p-3">
+            <div class="row  ">
+                <div class="col-md-6">
+                    <label class="font-weight-bold">Start Date <i class="icofont-dotted-down"></i></label>
+                    <input id="startDate" type="date" class="form-control" value="" />
+                </div>
+                <div class="col-md-6">
+                    <label class="font-weight-bold">
+                        <span class="d-none spinner-border"></span>
+                        End Date
+                        <i class="icofont-dotted-down"></i>
+                    </label>
+                    <input id="endDate" type="date" class="form-control" value="" />
+                </div>
+                <div class="col-md-12 mt-4">
+                    <button onclick="dateFilter()" class="btn btn-outline-primary w-100">Filter</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- database table -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-table mr-1"></i>
+            Current Transactions
+            <span id="tableSpinner" class="d-none spinner-border  spinner-grow-sm"></span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead class="text-center">
+                        <tr>
+                            <th>GIN-Date</th>
+                            <th>GIN-Details</th>
+                            <th>Location Details</th>
+                            <th>Crop Description</th>
+                            <th>Order Details</th>
+                            <th>Customer Details</th>
+                            <th>Transporter Details</th>
+                            <th>DO-Details</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableData" class=""></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modal" class="modal fade ModelDialog" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <iframe name="dFrame" id="dummyframe" style="display: none;"></iframe>
+            <form id="formData" target="dFrame" onsubmit="editForm()" enctype="multipart/form-data">
+                <input type="hidden" name="sTranNo" />
+                <!--<input name="status" />-->
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Sales Modal</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="font-weight-bold">Transaction Status<i class="icofont-dotted-down"></i></label>
+                        <select class="form-control" name="ginStatus" id="status">
+                            <option value="Approved">Approved</option>
+                            <option value="Retract">Retract</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="btnEdit" type="submit" class="btn btn-primary">
+                        <span id="btnSpinner" class="d-none spinner-border  spinner-grow-sm" role="status" aria-hidden="true"></span>
+                        Save changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!--Report Modal -->
+<div class="modal fade" id="reportModal" tabindex="-1" role="dialog" aria-labelledby="reportModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reportModalLabel">Enter Delivery Order Number</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="reportDoNumber">Delivery Order Number</label>
+                    <input type="text" class="form-control" id="reportDoNumber" name="reportDoNumber" placeholder="Enter Delivery Order Number">
+                </div>
+                <div class="form-group mt-4">
+                    <label for="">Location Filter</label>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label class="font-weight-bold">Province <i class="icofont-dotted-down"></i></label>
+                            <select class="form-control " name="provinceId2" id="provinceId2" onchange="provinceChangeListener2()" required>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="font-weight-bold">
+                                <span id="districtSpinner" class="d-none spinner-border  spinner-grow-sm"></span>
+                                District
+                                <i class="icofont-dotted-down"></i>
+                            </label>
+                            <select class="form-control" name="districtId2" id="districtId2" onchange="districtChangeListener2()" required>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="font-weight-bold">
+                                <span id="sateliteSpinner" class="d-none spinner-border  spinner-grow-sm"></span>
+                                Satellite
+                                <i class="icofont-dotted-down"></i>
+                            </label>
+                            <select class="form-control" name="SateliteId2" id="sateliteId2" required>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group mt-4">
+                    <label for="">Date Filter</label>
+                    <div class="row  ">
+                        <div class="col-md-6">
+                            <label class="font-weight-bold">Start Date <i class="icofont-dotted-down"></i></label>
+                            <input onchange="dateFilter2()" id="startDate2" type="date" class="form-control" value="" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="font-weight-bold">
+                                <span class="d-none spinner-border"></span>
+                                End Date
+                                <i class="icofont-dotted-down"></i>
+                            </label>
+                            <input onchange="dateFilter2()" id="endDate2" type="date" class="form-control" value="" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="generateReport()">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--Report Page Modal -->
+<div class="modal fade" id="reportPageModal" tabindex="-1" role="dialog" aria-labelledby="reportPageModalLabel" aria-hidden="true">
+    <div class="modal-dialog report-modal-dialog modal-xl" role="document">
+        <div class="modal-content report-modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reportPageModalLabel">Report</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <iframe id="reportPageFrame" src="" style="width: 100%; height: 100%"></iframe>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="downloadCSV()">Download CSV</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="downloadPDF()">Download PDF</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var url;
+    var today = new Date();
+    var startIndex = 0;
+    var batchSize = 100;
+    var dataTable;
+    var responseList = [];
+    var filterDate = true;
+    var filterLocation = true;
+
+    $(document).ready(async function () {
+        $('#startDate').val(getDateValue(today));
+        $('#endDate').val(getDateValue(today));
+        initializeDatatable();
+        await getStats();
+        displayMainBody();
+    });
+
+    async function getStats() {
+        var district = getCookie("district");
+        if (district == "null") {
+            await makeGetRequest(baseUrl + `getSalesStats`).then(response => {
+                if (response != null) {
+                    var dataList = response.results;
+                    $('#transNum').html(dataList.transactionsCount == "null" ? 0 : dataList.transactionsCount);
+                    $('#pendingTrans').html(dataList.pendingTransactrions == "null" ? 0 : dataList.pendingTransactrions);
+                    $('#approvedTrans').html(dataList.approvedTransactrions == "null" ? 0 : dataList.approvedTransactrions);
+                    $('#revenuNum').html(converToMoneyFormat(dataList.revenue == "null" ? 0 : dataList.revenue));
+                }
+            });
+        } else {
+            await makeGetRequest(baseUrl + `getSalesStatsByDistrict?districtCode=${district}`).then(response => {
+                if (response != null) {
+                    var dataList = response.results;
+                    $('#transNum').html(dataList.transactionsCount == "null" ? 0 : dataList.transactionsCount);
+                    $('#pendingTrans').html(dataList.pendingTransactrions == "null" ? 0 : dataList.pendingTransactrions);
+                    $('#approvedTrans').html(dataList.approvedTransactrions == "null" ? 0 : dataList.approvedTransactrions);
+                    $('#revenuNum').html(converToMoneyFormat(dataList.revenue == "null" ? 0 : dataList.revenue));
+                }
+            });
+        }
+
+    }
+
+    async function getData(shouldFilter, dateFilter, locationFilter, startDate, endDate, location) {
+        $("#tableSpinner").removeClass('d-none');
+        var formData = {
+            "startDate": startDate,
+            "endDate": endDate,
+            "shouldFilter": shouldFilter,
+            "dateFilter": dateFilter,
+            "locationFilter": locationFilter,
+            "location": location,
+            "startIndex": startIndex,
+            "batchSize": batchSize
+        };
+
+        await makePostRequest(formData, baseUrl + "getAllGIN").then(response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    responseList.push(dataList);
+                    dataTable.row.add([
+                        dataList.entryDate,
+                        `<label class="small">GIN-No:<br /> <b>${dataList.sTranNo}</b></label> <br />
+                                                         <label class="small">DO-NO:<br /> <b>${dataList.sLinkedTranNo}</b></label> <br />
+                                                        <label class="small">Order-ID:<br /> <b>${dataList.orderID}</b></label> <br />
+                                                        `,
+                        `<label class="small">District:<br /> <b>${dataList.sLocationID}</b></label> <br />
+                                                        <label class="small">Location:<br /> <b>${dataList.sTerminal}</b></label> <br />
+                                                         <label class="small">Depot:<br /> <b>${dataList.depot}</b></label> <br />
+                                                        `,
+                        `<label class="small">Item-No:<br /> <b>${dataList.itemNum}</b></label> <br />
+                                                         <label class="small">Description:<br /> <b>${dataList.itemDescr}</b></label> <br />
+                                                        `,
+                        `<label class="small">Unit: <b>${dataList.unitType}</b></label> <br />
+                                                        <label class="small">Ordered: <b>${dataList.sQtyOrdered}</b></label> <br />
+                                                         <label class="small">Issued: <b>${dataList.quantity}</b></label> <br />
+                                                         <label class="small">Available: <b>${dataList.dQtyBO}</b></label> <br />
+                                                        `,
+                        `<label class="small">Shipper:<br /> <b>${dataList.shipName}</b></label> <br />
+                                                         <label class="small">ID:<br /> <b>${dataList.customerID}</b></label> <br />
+                                                        <label class="small">Representative:<br /> <b>${dataList.sBillContact}</b></label> <br />
+                                                        `,
+                        `<label class="small">Transporter:<br /> <b>${dataList.sTransporter}</b></label> <br />
+                                                         <label class="small">Vehicle:<br /> <b>${dataList.sVehicleNumber}</b></label> <br />
+                                                         `,
+                        `<label class="small">Prepared-By:<br /> <b>${dataList.doPreparedBy}</b></label> <br />
+                                                         <label class="small">Complete-Status:<br /> <b>${highlightStatus(dataList.nComplete)}</b></label> <br />
+                                                        <label class="small">Hold-Status:<br /> <b>${highlightStatus(dataList.nOnHold)}</b></label> <br />`,
+                        highlightStatus(dataList.ginStatus, i),
+                        `<div class="d-flex justify-content-between">
+                                                            ${dataList.ginStatus != 'Pending' ?
+                            `<button class="btn bg-transparent text-success" disabled>Change Status</button>` :
+                            `<button class="btn bg-transparent text-success" onclick="editModel('${dataList.sTranNo}', '${dataList.ginStatus}')">Change Status</button>`}
+                                                        </div>`,
+                    ]);
+                }
+                dataTable.draw(false);
+                startIndex += batchSize;
+                const checkboxes = document.querySelectorAll('#dataTable input[type="checkbox"]');
+                checkboxes.forEach((checkbox) => {
+                    checkbox.addEventListener('change', handleCheckboxChange);
+                });
+            }
+        });
+        $("#tableSpinner").addClass('d-none');
+    }
+
+    // Function to handle checkbox change event (same as before)
+    function handleCheckboxChange(event) {
+        const row = event.target.parentNode.parentNode;
+        // Do something with the checkbox state and the associated data
+        if (event.target.checked) {
+            console.log(`Checkbox in row ${row.rowIndex} is checked.`);
+            console.log(row.cells[1].innerText);
+        } else {
+            console.log(`Checkbox in row ${row.rowIndex} is unchecked.`);
+        }
+    }
+    window.addEventListener("scroll", async function () {
+        var windowHeight = window.innerHeight;
+        var documentHeight = document.documentElement.scrollHeight;
+        var scrollPosition = window.scrollY || window.pageYOffset || document.body.scrollTop || document.documentElement.scrollTop;
+        if (scrollPosition + windowHeight >= documentHeight) {
+            // Bottom of the page is reached
+            console.log('Bottom of the page is reached');
+            // Your code here to handle the event when the bottom of the page is reached
+            // For example, you can load more data, trigger lazy loading, or perform any other action.
+            var sateliteValue = document.getElementById("sateliteId").value;
+            if (sateliteValue != null && sateliteValue != "") {
+                await getData(true, true, true, getDateValue(today), getDateValue(today), sateliteValue);
+            } else {
+                await getData(true, true, false, getDateValue(today), getDateValue(today), null);
+            }
+            console.log(startIndex.toString());
+        }
+    });
+
+    function editModel(sTranNo, status) {
+        var table = $('#dataTable').DataTable();
+        var Id = sTranNo;
+        var Status = status;
+        $('input[name=sTranNo]').val(Id);
+        $('input[name=status]').val(Status);
+        getSelectValue("status", Status);
+        $('#modal').modal('show');
+    }
+
+    async function generateReport() {
+        const doNumber = $('#reportDoNumber').val();
+        const startDate = $('#startDate2').val();
+        const endDate = $('#endDate2').val();
+        var formData = {
+            "startDate": getDateValue(startDate),
+            "endDate": getDateValue(endDate),
+            "shouldFilter": true,
+            "dateFilter": filterDate,
+            "locationFilter": false,
+            "location": null,
+            "startIndex": 0,
+            "batchSize": 10,
+            "deliveryOrderNo": doNumber
+        };
+
+        var sateliteValue = document.getElementById("sateliteId2").value;
+        if (sateliteValue != null && sateliteValue != "") {
+            formData = {
+                "startDate": getDateValue(startDate),
+                "endDate": getDateValue(endDate),
+                "shouldFilter": true,
+                "dateFilter": filterDate,
+                "locationFilter": true,
+                "location": sateliteValue,
+                "startIndex": 0,
+                "batchSize": batchSize,
+                "deliveryOrderNo": doNumber
+            };
+        }
+
+        await makePostRequest(formData, baseUrl + "getAllGINReport").then(response => {
+            if (response != null) {
+                console.log(response);
+                window.localStorage.setItem('report-data', JSON.stringify(response.results));
+                document.getElementById("reportPageFrame").src = "/templates/generate-report.html";
+
+                $('#reportPageModal').modal('show');
+                $('#reportModal').modal('hide');
+            }
+        });
+    }
+
+    async function editForm() {
+        $("#btnSpinner").removeClass('d-none');
+        var formData = $('#formData').serializeArray().reduce(function (obj, item) {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+        console.log(formData);
+
+        await makePostRequest(formData, baseUrl + "updateGIN").then(async response => {
+            console.log(response);
+            if (response.error) {
+                alertify.error('Unsuccessful - ' + response.errorMessage);
+                console.log(response.errorMessage);
+            } else {
+                alertify.success("Record Updated");
+            }
+        });
+
+        $("#btnSpinner").addClass('d-none');
+        $('#modal').modal('hide');
+
+    }
+
+    //date Filter
+    async function dateFilter() {
+        var startDate = $('#startDate').val();
+        var endDate = $('#endDate').val();
+        var sateliteValue = document.getElementById("sateliteId").value;
+        var filterLocation = true;
+        if(sateliteValue == null || sateliteValue == ''){
+            filterLocation = false;
+        }
+        //$('#dataTable').DataTable({ "bDestroy": true }).clear();
+        startIndex = 0;
+        responseList = [];
+        dataTable.clear().draw();
+        filterDate = true;
+        await getData(true, filterDate, filterLocation, startDate, endDate, sateliteValue);
+    }
+
+    async function dateFilter2() {
+        var startDate = $('#startDate2').val();
+        var endDate = $('#endDate2').val();
+        //$('#dataTable').DataTable({ "bDestroy": true }).clear();
+        startIndex = 0;
+        responseList = [];
+        dataTable.clear().draw();
+        filterDate = true;
+    }
+
+    async function getProvinceData() {
+        var province = getCookie("province");
+        if (province == "null") {
+            await makeGetRequest(baseUrl + "getProvinces").then(async response => {
+                if (response != null) {
+                    for (i in response.results) {
+                        var dataList = response.results[i];
+                        $('#provinceId').append($('<option>', {
+                            value: dataList.location.trim(),
+                            text: dataList.name.trim(),
+                        }));
+                    }
+                    await provinceChangeListener();
+                }
+            });
+        } else {
+            await makeGetRequest(baseUrl + `getProvincesByCode?provinceCode=${province}`).then(async response => {
+                if (response != null) {
+                    for (i in response.results) {
+                        var dataList = response.results[i];
+                        $('#provinceId').append($('<option>', {
+                            value: dataList.location.trim(),
+                            text: dataList.name.trim(),
+                        }));
+                    }
+                    await provinceChangeListener();
+                }
+            });
+        }
+
+    }
+
+    async function provinceChangeListener() {
+        $('#districtId').empty();
+        //$('#dataTable').DataTable({ "bDestroy": true }).clear();
+        dataTable.clear().draw();
+        responseList = [];
+        $("#districtSpinner").removeClass('d-none');
+        var district = getCookie("district");
+        var provinceValue = document.getElementById("provinceId").value;
+        if (district == "null") {
+            await makeGetRequest(baseUrl + `getDistricts?provinceCode=${provinceValue}`).then(async response => {
+                if (response != null) {
+                    for (i in response.results) {
+                        var dataList = response.results[i];
+                        $('#districtId').append($('<option>', {
+                            value: dataList.location.trim(),
+                            text: dataList.name.trim(),
+                        }));
+                    }
+                    await districtChangeListener();
+                }
+            });
+        } else {
+            await makeGetRequest(baseUrl + `getDistrictsByName?provinceCode=${provinceValue}&district=${district}`).then(async response => {
+                if (response != null) {
+                    for (i in response.results) {
+                        var dataList = response.results[i];
+                        $('#districtId').append($('<option>', {
+                            value: dataList.location.trim(),
+                            text: dataList.name.trim(),
+                        }));
+                    }
+                    await districtChangeListener();
+                }
+            });
+        }
+
+        $("#districtSpinner").addClass('d-none');
+    }
+
+    async function districtChangeListener() {
+        $('#sateliteId').empty();
+        //$('#dataTable').DataTable({ "bDestroy": true }).clear();
+        dataTable.clear().draw();
+        responseList = [];
+        $("#sateliteSpinner").removeClass('d-none');
+
+        var districtValue = document.getElementById("districtId").value;
+        await makeGetRequest(baseUrl + `getSatelites?disctrictCode=${districtValue}`).then(async response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#sateliteId').append($('<option>', {
+                        value: dataList.location.trim(),
+                        text: dataList.name.trim(),
+                    }));
+                }
+                await sateliteChangeListener();
+            }
+        });
+        $("#sateliteSpinner").addClass('d-none');
+    }
+
+    async function sateliteChangeListener() {
+        $("#deviceSpinner").removeClass('d-none');
+        //$('#dataTable').DataTable({ "bDestroy": true }).clear();
+        responseList = [];
+
+        var sateliteValue = document.getElementById("sateliteId").value;
+        var startDate = $('#startDate').val();
+        var endDate = $('#endDate').val();
+        startIndex = 0;
+        dataTable.clear().draw();
+        initializeDatatable();
+        //filterDate = false;
+        await getData(true, filterDate, true, startDate, endDate, sateliteValue);
+        $("#deviceSpinner").addClass('d-none');
+    }
+    //end of date filter
+
+    async function getProvinceData2() {
+        var province = getCookie("province");
+        if (province == "null") {
+            await makeGetRequest(baseUrl + "getProvinces").then(async response => {
+                if (response != null) {
+                    for (i in response.results) {
+                        var dataList = response.results[i];
+                        $('#provinceId2').append($('<option>', {
+                            value: dataList.location.trim(),
+                            text: dataList.name.trim(),
+                        }));
+                    }
+                    await provinceChangeListener2();
+                }
+            });
+        } else {
+            await makeGetRequest(baseUrl + `getProvincesByCode?provinceCode=${province}`).then(async response => {
+                if (response != null) {
+                    for (i in response.results) {
+                        var dataList = response.results[i];
+                        $('#provinceId2').append($('<option>', {
+                            value: dataList.location.trim(),
+                            text: dataList.name.trim(),
+                        }));
+                    }
+                    await provinceChangeListener2();
+                }
+            });
+        }
+
+    }
+
+    async function provinceChangeListener2() {
+        $('#districtId2').empty();
+        //$('#dataTable').DataTable({ "bDestroy": true }).clear();
+        dataTable.clear().draw();
+        responseList = [];
+        $("#districtSpinner").removeClass('d-none');
+        var district = getCookie("district");
+        var provinceValue = document.getElementById("provinceId2").value;
+        if (district == "null") {
+            await makeGetRequest(baseUrl + `getDistricts?provinceCode=${provinceValue}`).then(async response => {
+                if (response != null) {
+                    for (i in response.results) {
+                        var dataList = response.results[i];
+                        $('#districtId2').append($('<option>', {
+                            value: dataList.location.trim(),
+                            text: dataList.name.trim(),
+                        }));
+                    }
+                    await districtChangeListener2();
+                }
+            });
+        } else {
+            await makeGetRequest(baseUrl + `getDistrictsByName?provinceCode=${provinceValue}&district=${district}`).then(async response => {
+                if (response != null) {
+                    for (i in response.results) {
+                        var dataList = response.results[i];
+                        $('#districtId2').append($('<option>', {
+                            value: dataList.location.trim(),
+                            text: dataList.name.trim(),
+                        }));
+                    }
+                    await districtChangeListener2();
+                }
+            });
+        }
+
+        $("#districtSpinner").addClass('d-none');
+    }
+
+    async function districtChangeListener2() {
+        $('#sateliteId2').empty();
+        //$('#dataTable').DataTable({ "bDestroy": true }).clear();
+        dataTable.clear().draw();
+        responseList = [];
+        $("#sateliteSpinner").removeClass('d-none');
+
+        var districtValue = document.getElementById("districtId2").value;
+        await makeGetRequest(baseUrl + `getSatelites?disctrictCode=${districtValue}`).then(async response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#sateliteId2').append($('<option>', {
+                        value: dataList.location.trim(),
+                        text: dataList.name.trim(),
+                    }));
+                }
+                //await sateliteChangeListener();
+            }
+        });
+        $("#sateliteSpinner").addClass('d-none');
+    }
+
+
+    function highlightStatus(val, index) {
+        if (val == 'Pending') {
+            return `<i class="text-warning" id='status_${index}'>${val}</i>`
+        } else if (val == 'Approved') {
+            return `<i class="text-success" id='status_${index}'>${val}</i>`
+        } else if (val == 'Posted') {
+            return `<i class="text-secondary" id='status_${index}'>${val}</i>`
+        } else if (val == 'Retract') {
+            return `<i class="text-danger" id='status_${index}'>${val}</i>`
+        } else {
+            return `<i class="text-info" id='status_${index}'>${val}</i>`
+        }
+    }
+
+    function checkIfValid(val, retractedAmount, status) {
+        status = status.toLowerCase();
+        if (status == "retract") {
+            return `<p class="text-danger"><del>${converToMoneyFormat(retractedAmount)}</del></p>
+                                                    <p class="text-danger">${converToMoneyFormat(0)}</p>`;
+        } else {
+            return ` <p class="text-success">${converToMoneyFormat(val)}</p>`;
+        }
+    }
+
+    function initializeDatatable() {
+        dataTable = $('#dataTable').DataTable({
+            dom: 'Bfrti',
+            buttons: [
+                'copy', {
+                    text: 'CSV', action: function (e, dt, node, config) {
+                        // Define headers for the Excel file
+                        const headers = [
+                            'customerID',
+                            'customerNumber',
+                            'dCustOpenBalance',
+                            'dQtyBO',
+                            'dTranNo',
+                            'depot',
+                            'doPreparedBy',
+                            'entryDate',
+                            'ginBagType',
+                            'ginModifyBy',
+                            'ginModifyDate',
+                            'ginSource',
+                            'ginStatus',
+                            'ginTransactionType',
+                            'ginType',
+                            'ginWeightSource',
+                            'itemDescr',
+                            'itemNum',
+                            'lAdditionalNumber01',
+                            'lineTotal',
+                            'lineVat',
+                            'nComplete',
+                            'nOnHold',
+                            'nPosted',
+                            'notes',
+                            'orderID',
+                            'orderType',
+                            'printed',
+                            'purchaseOrderNumber',
+                            'quantity',
+                            'sBillAddr',
+                            'sBillCity',
+                            'sBillContact',
+                            'sBillCountry',
+                            'sBillEmail',
+                            'sBillPhoneNo',
+                            'sBillProvince',
+                            'sLinkedTranNo',
+                            'sLocationID',
+                            'sQtyOrdered',
+                            'sShipEmail',
+                            'sTerminal',
+                            'sTranNo',
+                            'sTransporter',
+                            'sVehicleNumber',
+                            'shipAddress',
+                            'shipCity',
+                            'shipContact',
+                            'shipCountry',
+                            'shipName',
+                            'shipPhoneNumber',
+                            'shipStateOrProvince',
+                            'sidNo',
+                            'totalQuantity',
+                            'unitPrice',
+                            'unitType'
+                        ];
+                        const csvData = [
+                            headers,
+                            ...responseList.map(row =>
+                                headers.map(header => {
+                                    let value = row[header] !== undefined && row[header] !== null ? row[header] : ''; // Replace undefined/null with ''
+                                    value = value.toString().replace(/"/g, '""'); // Escape double quotes
+                                    value = value.replace(/\n/g, ' '); // Remove newlines to prevent row breaks
+                                    return `"${value}"`; // Wrap in double quotes to protect commas
+                                })
+                            )
+                        ];
+                        const csvContent = csvData.map(row => row.join(',')).join('\n');
+                        console.log(responseList);
+                        const csvBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                        const csvURL = URL.createObjectURL(csvBlob);
+                        const link = document.createElement('a');
+                        link.setAttribute('href', csvURL);
+                        link.setAttribute('download', 'CropManagementSystem_GIN.csv');
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
+                }, {
+                    text: 'EXCEL', action: function (e, dt, node, config) {
+                        // Define headers for the Excel file
+                        const headers = [
+                            'customerID',
+                            'customerNumber',
+                            'dCustOpenBalance',
+                            'dQtyBO',
+                            'dTranNo',
+                            'depot',
+                            'doPreparedBy',
+                            'entryDate',
+                            'ginBagType',
+                            'ginModifyBy',
+                            'ginModifyDate',
+                            'ginSource',
+                            'ginStatus',
+                            'ginTransactionType',
+                            'ginType',
+                            'ginWeightSource',
+                            'itemDescr',
+                            'itemNum',
+                            'lAdditionalNumber01',
+                            'lineTotal',
+                            'lineVat',
+                            'nComplete',
+                            'nOnHold',
+                            'nPosted',
+                            'notes',
+                            'orderID',
+                            'orderType',
+                            'printed',
+                            'purchaseOrderNumber',
+                            'quantity',
+                            'sBillAddr',
+                            'sBillCity',
+                            'sBillContact',
+                            'sBillCountry',
+                            'sBillEmail',
+                            'sBillPhoneNo',
+                            'sBillProvince',
+                            'sLinkedTranNo',
+                            'sLocationID',
+                            'sQtyOrdered',
+                            'sShipEmail',
+                            'sTerminal',
+                            'sTranNo',
+                            'sTransporter',
+                            'sVehicleNumber',
+                            'shipAddress',
+                            'shipCity',
+                            'shipContact',
+                            'shipCountry',
+                            'shipName',
+                            'shipPhoneNumber',
+                            'shipStateOrProvince',
+                            'sidNo',
+                            'totalQuantity',
+                            'unitPrice',
+                            'unitType'
+                        ];
+                        const csvData = [
+                            headers,
+                            ...responseList.map(row =>
+                                headers.map(header => {
+                                    let value = row[header] !== undefined && row[header] !== null ? row[header] : ''; // Replace undefined/null with ''
+                                    value = value.toString().replace(/"/g, '""'); // Escape double quotes
+                                    value = value.replace(/\n/g, ' '); // Remove newlines to prevent row breaks
+                                    return `"${value}"`; // Wrap in double quotes to protect commas
+                                })
+                            )
+                        ];
+                        const csvContent = csvData.map(row => row.join(',')).join('\n');
+                        const csvBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                        const csvURL = URL.createObjectURL(csvBlob);
+                        const link = document.createElement('a');
+                        link.setAttribute('href', csvURL);
+                        link.setAttribute('download', 'CropManagementSystem_GIN.csv');
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
+                }, 'pdf', 'print',
+                {
+                    text: 'Generate Report', action: async function (e, dt, node, config) {
+                        $('#reportModal').modal('show');
+                        await getProvinceData2();
+                    }
+                }
+            ],
+            "pageLength": 20000,
+            "columnDefs": [{ "width": "15%", "targets": 5 }],
+            "order": [[7, "desc"]],
+            "bDestroy": true,
+        });
+    }
+
+    function downloadPDF() {
+        const iframe = document.getElementById('reportPageFrame');
+        const iframeContent = iframe.contentDocument || iframe.contentWindow.document;
+        const element = iframeContent.getElementById('pdf-content').innerHTML;
+        const doNumber = $('#reportDoNumber').val();
+        const startDate = $('#startDate').val();
+        const endDate = $('#endDate').val();
+        const fileName = `${doNumber}_${startDate}_${endDate}.pdf`;
+
+        // Create a copy of the content without scripts
+        //const contentWithoutScripts = element.cloneNode(true);
+        //const scripts = contentWithoutScripts.getElementsByTagName('script');
+
+        // Open a document in the print window and write content to it
+        console.log(element);
+        var content = `<html><head><title>${fileName}</title></head>`;
+        var body = `${element}</html>`;
+        console.log(content);
+        content += body;
+        //for (let i = scripts.length - 1; i >= 0; i--) {
+        //    scripts[i].parentNode.removeChild(scripts[i]);
+        //}
+        console.log(content);
+
+        // Open a new window for printing
+        const printWindow = window.open('', '_blank');
+
+        printWindow.document.open();
+        printWindow.document.write(content);
+        printWindow.document.close();
+
+        // Trigger the print dialog
+        printWindow.print();
+    }
+
+
+
+    async function downloadCSV() {
+        const doNumber = $('#reportDoNumber').val();
+        const startDate = $('#startDate2').val();
+        const endDate = $('#endDate2').val();
+        var formData = {
+            "startDate": getDateValue(startDate),
+            "endDate": getDateValue(endDate),
+            "shouldFilter": dateFilter,
+            "dateFilter": filterDate,
+            "locationFilter": filterLocation,
+            "location": null,
+            "startIndex": 0,
+            "batchSize": batchSize,
+            "deliveryOrderNo": doNumber
+        };
+
+        var sateliteValue = document.getElementById("sateliteId2").value;
+        if (sateliteValue != null && sateliteValue != "") {
+            formData = {
+                "startDate": getDateValue(startDate),
+                "endDate": getDateValue(endDate),
+                "shouldFilter": true,
+                "dateFilter": filterDate,
+                "locationFilter": true,
+                "location": sateliteValue,
+                "startIndex": 0,
+                "batchSize": batchSize,
+                "deliveryOrderNo": doNumber
+            };
+        }
+
+        try {
+            const response = await fetch(baseUrl + 'getAllGINExcel', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'DeliveryOrders.csv'; // You can set the desired file name here
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error while downloading the file:', error);
+        }
+
+
+        /*await makePostRequest(formData, baseUrl + "getAllGIN").then(response => {
+            if (response != null) {
+                const filteredResults = response.results.filter(result => {
+                    return result.sLinkedTranNo === doNumber;
+                });
+
+                const headers = ['SLNO', 'DATE', 'DELIVERY ORDER NO', 'GIN Number', 'Transporter', 'Truck Number', 'QTY in Bags', 'QTY in TONs', 'Price', 'Representitve', 'Identity', 'QTY Paid in TONs', 'Bal in Bags', 'Bal in TONs'];
+                const csvDataFiltered = filteredResults.map(rowData => {
+                    const truckNo = rowData.sVehicleNumber ? rowData.sVehicleNumber : "N/A";
+                    return [
+                        rowData.orderID,
+                        rowData.entryDate,
+                        rowData.sLinkedTranNo,
+                        rowData.sTranNo,
+                        rowData.sTransporter,
+                        truckNo,
+                        formatNumber(rowData.quantity * 20),
+                        formatNumber(rowData.quantity),
+                        formatCurrency(rowData.unitPrice / 20),
+                        capitalizeName(rowData.sBillContact),
+                        rowData.sidNo,
+                        '',
+                        formatNumber(rowData.dQtyBO * 20),
+                        formatNumber(rowData.dQtyBO)
+                    ];
+                });
+                const csvData = [headers, ...csvDataFiltered.map(row => Object.values(row))];
+                const csvContent = csvData.map(row => row.join(',')).join('\n');
+                const csvBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const csvURL = URL.createObjectURL(csvBlob);
+                const link = document.createElement('a');
+                link.setAttribute('href', csvURL);
+                link.setAttribute('download', 'CropManagementSystem_GIN.csv');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        });*/
+    }
+
+</script>
+
+

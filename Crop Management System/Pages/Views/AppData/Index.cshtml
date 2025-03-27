@@ -1,0 +1,206 @@
+﻿@page
+@model Crop_Management_System.Pages.Views.AppData.IndexModel
+@{
+}
+
+<div>
+    <h4 class="mt-4">AppData</h4>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item active"><a href='@Url.Action("Index","Home")' class="ml-1 mr-1">Dashboard</a> / AppData</li>
+    </ol>
+
+    <div class="mt-4">
+        <button onclick="resetButtons('Create')" class="btn btn-primary w-100" data-toggle="modal" data-target="#modal">Add App Data</button>
+    </div>
+
+    <!-- database table -->
+    <div class="mt-4 card mb-4">
+        <div class="card-header align-items-center d-flex justify-content-between">
+            <div>
+                <i class="fas fa-table mr-1"></i>
+                Current Data
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>App Version</th>
+                            <th>Change Log</th>
+                            <th>App Link</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableData" class=""></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Crop Modal *@
+<div id="modal" class="modal fade ModelDialog" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <iframe name="dFrame" id="dummyframe" style="display: none;"></iframe>
+            <form id="formData" target="dFrame" enctype="multipart/form-data">
+                <input type="hidden" name="id" value="0" />
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Crop Modal</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group" contenteditable="true">
+                        <label class="font-weight-bold">App Version</label>
+                        <input type="text" class="form-control" name="appVersion" required autocomplete="off">
+                        <label class="font-weight-bold">Change Log</label>
+                        <textarea class="form-control" name="ChangeLog" required autocomplete="off"></textarea>
+                        <label>APK FILE</label>
+                        <input type="file" class="form-control" name="ImageFile" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="btnCreate" type="button" class="btn btn-primary" onclick="uploadHandler(false)">
+                        <span id="btnSpinner" class="d-none spinner-border  spinner-grow-sm" role="status" aria-hidden="true"></span>
+                        Save changes
+                    </button>
+                    <button id="btnUpdate" type="button" class="btn btn-warning d-none" onclick="uploadHandler(true)">
+                        <span id="btnSpinnerUpdate" class="d-none spinner-border  spinner-grow-sm" role="status" aria-hidden="true"></span>
+                        Update
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    var url;
+
+    $(document).ready(async function () {
+        await getData();
+        displayMainBody();
+    });
+
+    async function getData() {
+        $('#dataTable').DataTable({ "bDestroy": true }).clear();
+        await makeGetRequest(baseUrl + "getAllAppData").then(response => {
+            if (response != null && response.results != null) {
+                var dataList = response.results;
+                $('#dataTable').DataTable({
+                    "order": [[0, "desc"]],
+                    "bDestroy": true
+                }).row.add([
+                    dataList.id,
+                    dataList.appVersion,
+                    dataList.changeLog,
+                    dataList.link,
+                    `<div class="d-flex justify-content-around">
+                        <button class="btn bg-transparent text-info" onclick="editModel('0')">Edit</button>
+                        <button class="btn bg-transparent text-danger" onclick="deleteFunction('${dataList.id}')">Remove</button>
+                    </div>`,
+                ]).draw();
+            }
+        });
+    }
+
+    function download(link) {
+        var element = document.createElement('a');
+        element.setAttribute('href', link);
+
+        element.style.display = 'none';
+        document.body.appendChild(element);
+
+        element.click();
+
+        document.body.removeChild(element);
+    }
+
+    function editModel(index) {
+        $(`#btnUpdate`).removeClass('d-none');
+        $(`#btnCreate`).addClass('d-none');
+
+        var table = $('#dataTable').DataTable();
+
+        //get data
+        var id = table.row(index).data()[0];
+        var appVersion = table.row(index).data()[1];
+        var changeLog = table.row(index).data()[2];
+        var link = table.row(index).data()[3];
+
+        //add data
+        $('input[name=appVersion]').val(appVersion);
+        $('input[name=id]').val(id);
+        document.getElementsByName('ChangeLog')[0].value = changeLog;
+
+        //display model
+        $('#modal').modal('show');
+    }
+
+    async function uploadHandler(update) {
+        var url = "createAppData";
+        var spinnerClass = "#btnSpinner";
+        if (update) {
+            url = "updateAppData";
+            spinnerClass = "#btnSpinnerUpdate"
+        }
+
+        $(spinnerClass).removeClass('d-none');
+
+        var formData = new FormData();
+        formData.append("id", document.getElementsByName('id')[0].value);
+        formData.append("ChangeLog", document.getElementsByName('ChangeLog')[0].value);
+        formData.append("UploadFile", document.getElementsByName('ImageFile')[0].files[0]);
+        formData.append("appVersion", $('input[name=appVersion]').val());
+
+        for (const entry of formData.entries()) {
+            console.log(entry);
+        }
+
+        await makePostFormRequest(formData, baseUrl + url).then(async response => {
+            console.log(response);
+            if (response.error) {
+                alertify.error('Unsuccessful - Please ensure APK has been added');
+                console.log(response.errorMessage);
+            } else {
+                alertify.success("Crop Updated");
+                $('#modal').modal('hide');
+                await getData();
+            }
+        });
+
+        //update record in table
+        $(spinnerClass).addClass('d-none');
+    }
+
+    async function deleteFunction(id) {
+        var confirmText = "Are you sure you want to delete this device?";
+        if (confirm(confirmText)) {
+            await makeGetRequest(baseUrl + `deleteCrops?id=${id}`).then(async response => {
+                if (response != null) {
+                    console.log(response);
+                    if (response.error) {
+                        alertify.error("Failed to Delete Crops");
+                    } else {
+                        alertify.success("Crops Successfuly Deleted");
+                        $('#dataTable').DataTable({ "bDestroy": true }).clear();
+                        await getData();
+                    }
+
+                }
+            });
+        }
+    }
+
+    function resetButtons(src) {
+        $(`#btnCreate`).removeClass('d-none');
+        $(`#btnUpdate`).addClass('d-none');
+    }
+</script>

@@ -1,0 +1,48 @@
+﻿@page
+@model UnauthorizedModel
+@{
+    ViewData["Title"] = "Access Denied";
+}
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+        margin: 0;
+        padding: 0;
+    }
+
+    .unauthorized-container {
+        background-color: #fff;
+        max-width: 400px;
+        margin: 100px auto;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        text-align: center;
+    }
+
+    h1 {
+        color: #e74c3c;
+    }
+
+    a {
+        color: #3498db;
+        text-decoration: none;
+    }
+
+        a:hover {
+            text-decoration: underline;
+        }
+</style>
+<div class="unauthorized-container">
+    <h1>Access Denied</h1>
+    <p>You do not have permission to access this page.</p>
+    <a href="/">Go Back to Home</a>
+</div>
+
+<script>
+    $(document).ready(async function () {
+        displayMainBody();
+    });
+</script>

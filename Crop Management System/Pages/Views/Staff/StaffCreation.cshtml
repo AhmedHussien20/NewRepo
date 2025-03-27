@@ -1,0 +1,430 @@
+﻿@page
+@model Crop_Management_System.Pages.Views.Staff.StaffCreationModel
+@{
+}
+
+<div>
+    <div>
+        @if (@Model.updateData)
+        {
+            <h4 class="mt-4">Users Update</h4>
+        }
+        else
+        {
+            <h4 class="mt-4">Users Creation</h4>
+        }
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item active"><a href="@Url.Page("/Views/Staff/Index")" class="ml-1 mr-1">Users</a> / Users Creation</li>
+        </ol>
+    </div>
+
+    <div class="mt-4">
+        <div>
+            <iframe name="dFrame" id="dummyframe" style="display: none;"></iframe>
+            <form id="formData" target="dFrame" onsubmit="submitForm()" enctype="multipart/form-data">
+                <div>
+                    <h5>Location Information</h5>
+                    <div class="border border-info rounded p-3">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label class="font-weight-bold">Province <i class="icofont-dotted-down"></i></label>
+                                <select class="form-control " name="provinceId" id="provinceId" onchange="provinceChangeListener()" required>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="font-weight-bold">
+                                    <span id="districtSpinner" class="d-none spinner-border  spinner-grow-sm"></span>
+                                    District
+                                    <i class="icofont-dotted-down"></i>
+                                </label>
+                                <select class="form-control" name="districtId" id="districtId" onchange="districtChangeListener()" required>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="font-weight-bold">
+                                    <span id="sateliteSpinner" class="d-none spinner-border  spinner-grow-sm"></span>
+                                    Satellite
+                                    <i class="icofont-dotted-down"></i>
+                                </label>
+                                <select class="form-control" name="SateliteId" id="sateliteId" onchange="sateliteChangeListener()" required>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h5>Personal Information</h5>
+                    <div class="border border-info rounded p-3">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label class="font-weight-bold">First Name</label>
+                                <input type="text" class="form-control" name="firstName" required autocomplete="off">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="font-weight-bold">Last Name</label>
+                                <input type="text" class="form-control" name="lastName" required autocomplete="off">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="font-weight-bold">Email</label>
+                                <input type="email" class="form-control" name="email" required autocomplete="off">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="font-weight-bold">Phone Number</label>
+                                <input type="tel" class="form-control" name="phoneNumber" required autocomplete="off">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="font-weight-bold  ">Gender</label>
+                                <select class="form-control" name="gender" id="gender">
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="font-weight-bold  ">Date Of Birth</label>
+                                <input type="date" class="form-control" name="dob" max="2015-12-31" required>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="font-weight-bold  ">NRC Number</label>
+                                <input minlength="11" maxlength="13" type="text" class="form-control nrcNumber" name="nrcNumber" required autocomplete="off">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h5>Account Information</h5>
+                    <div class="border border-info rounded p-3">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label class="font-weight-bold">Location</label>
+                                <input type="text" class="form-control nrcNumber" name="location" id="Location" required autocomplete="off">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="font-weight-bold">Account Status <i class="icofont-dotted-down"></i></label>
+                                <select class="form-control" name="accountStatusId" id="accountStatusId">
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="font-weight-bold">Role<i class="icofont-dotted-down"></i></label>
+                                <select class="form-control" name="roleId" id="roleId">
+                                </select>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="font-weight-bold mt-3">Password</label>
+                                <div class="input-group">
+                                    <input minlength="7" type="password" class="form-control" name="password" id="password"
+                                           pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+                                           title="Must contain at least one number, one uppercase and lowercase letter, and at least 8 or more characters"
+                                           required autocomplete="off">
+                                    <div class="input-group-append" id="togglePasswordContainer">
+                                        <button type="button" class="btn btn-outline-secondary" onclick="togglePassword()">
+                                            <i class="fa fa-eye" id="toggleIcon"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @*@if (!@Model.updateData)
+                                {
+                                    <div class="col-md-12">
+                                        <label class="font-weight-bold mt-3">Password</label>
+                                        <input minlength="7" type="password" class="form-control" name="password"
+                                               pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+                                               title="Must contain at least one number and one uppercase and lowercase letter,
+                                               and at least 8 or more characters" required autocomplete="off">
+                                    </div>
+                                }*@
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary w-100 mt-4 mb-4">
+                        <span id="btnSpinner" class="d-none spinner-border  spinner-grow-sm" role="status" aria-hidden="true"></span>
+                        SUBMIT
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var accountId;
+
+    $(document).ready(async function () {
+        var userRole = getCookie("userRole");
+
+        if (userRole != "Admin") {
+            window.location.href = "/Unauthorized"; 
+            $("#togglePasswordContainer").hide(); // Hide the toggle button if user is not Admin
+        }
+
+        await getData();
+        displayMainBody();
+    });
+
+    function togglePassword() {
+        const passwordInput = document.getElementById("password");
+        const toggleIcon = document.getElementById("toggleIcon");
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            toggleIcon.classList.remove("fa-eye");
+            toggleIcon.classList.add("fa-eye-slash");
+        } else {
+            passwordInput.type = "password";
+            toggleIcon.classList.remove("fa-eye-slash");
+            toggleIcon.classList.add("fa-eye");
+        }
+    }
+
+    async function getData() {
+        await makeGetRequest(baseUrl + `getAllAccountStatus`).then(async response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#accountStatusId').append($('<option>', {
+                        value: dataList.id,
+                        text: dataList.title,
+                    }));
+                }
+            }
+        });
+
+        await makeGetRequest(baseUrl + `getAllRoles`).then(async response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#roleId').append($('<option>', {
+                        value: dataList.id,
+                        text: dataList.title,
+                    }));
+                }
+                getSelectValue("roleId", "SDC");
+            }
+        });
+
+
+        @if (@Model.updateData)
+        {
+            @Html.Raw("await getUserDataForUpdate();");
+            @Html.Raw("await getProvinceData();");
+        }
+        else {
+        @Html.Raw("await getProvinceData();");
+        }
+    }
+
+    async function getUserDataForUpdate() {
+        var userID = "@Model.userId";
+        await makeGetRequest(baseUrl + `getStaff?id=${userID}`).then(async response => {
+            if (response != null) {
+                if (!response.error) {
+                    var dataList = response.results;
+                    console.log(dataList);
+                    accountId = dataList.staffData.id;
+                    //$('input[name=password]').prop("disabled", "disabled");
+                    $('input[name=password]').val(dataList.staffData.password);
+                    $('input[name=firstName]').val(dataList.staffData.firstName);
+                    $('input[name=lastName]').val(dataList.staffData.lastName);
+                    $('input[name=email]').val(dataList.staffData.email);
+                    $('input[name=nrcNumber]').val(dataList.nrcNumber);
+                    $('input[name=phoneNumber]').val(dataList.staffData.phoneNumber);
+                    $('input[name=dob]').val(getDateValue(dataList.staffData.dob));
+                    $('input[name=location]').val(dataList.location);
+                    getSelectValue("roleId", dataList.staffData.rolesModel.title);
+                    getSelectValue("gender", dataList.staffData.gender);
+                }
+            }
+        });
+    }
+
+    async function submitForm() {
+        $("#btnSpinner").removeClass('d-none');
+        var formData = $('#formData').serializeArray().reduce(function (obj, item) {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+
+
+        @if (@Model.updateData)
+        {
+            @Html.Raw("await updateStaff(formData)");
+        }
+        else {
+            @Html.Raw("await getStaffbyNrc(formData);");
+        }
+    }
+
+    async function getStaffbyNrc(formData) {
+        await makeGetRequest(baseUrl + `getStaffbyNrc?nrc=${formData.nrcNumber}`).then(async response => {
+            if (response != null) {
+                if (response.error) {
+                    //check if location is valid
+                    await makeGetRequest(baseUrl + `getByLocation?location=${formData.location}`).then(async response => {
+                        if (response != null) {
+                            if (!response.error) {
+                                await createUserAccount(formData);
+                            } else {
+                                $("#btnSpinner").addClass('d-none');
+                                alertify.error('Invalid location passed');
+                            }
+                        }
+                    });
+                } else {
+                    $("#btnSpinner").addClass('d-none');
+                    alertify.error('Account with this NRC Already Exists');
+                }
+            }
+        });
+    }
+
+    async function createUserAccount(formData) {
+        await makePostRequest(formData, baseUrl + "createUsers").then(async response => {
+            console.log(response);
+            if (response.error) {
+                alertify.error('Unsuccessful - ' + response.errorMessage);
+                console.log(response.errorMessage);
+                $("#btnSpinner").addClass('d-none');
+            } else {
+                var id = response.results;
+                alertify.success("User Profile Created, Sending Registration Email...");
+                await sendMail(formData.email);
+                await createStaff(id, formData)
+            }
+        });
+    }
+
+    async function createStaff(id, formData) {
+        formData.staffId = id;
+        await makePostRequest(formData, baseUrl + "createStaff").then(async response => {
+            console.log(response);
+            if (response.error) {
+                alertify.error('Unsuccessful - ' + response.errorMessage);
+                console.log(response.errorMessage);
+            } else {
+                alertify.success("Staff Created");
+            }
+            $("#userResponse").fadeIn().removeClass('d-none');
+        });
+        $("#btnSpinner").addClass('d-none');
+    }
+
+    async function updateStaff(formData) {
+        var userID = "@Model.userId";
+
+        formData.id = accountId;
+
+        var keys = [];
+        var t;
+        for (var key in formData) {
+            if (formData.hasOwnProperty(key)) {
+                keys
+                console.log(key, formData[key])
+                t += { key: formData[key] };
+            }
+        }
+
+
+        await makePostRequest(formData, baseUrl + "updateUsers").then(async response => {
+            console.log(response);
+            if (response.error) {
+                alertify.error('Unsuccessful - ' + response.errorMessage);
+                console.log(response.errorMessage);
+            } else {
+                alertify.success("Account Updated");
+            }
+        });
+
+        formData.id = userID;
+        await makePostRequest(formData, baseUrl + "updateStaff").then(async response => {
+            console.log(response);
+            if (response.error) {
+                alertify.error('Unsuccessful - ' + response.errorMessage);
+                console.log(response.errorMessage);
+            } else {
+                alertify.success("Staff Details Updated");
+            }
+        });
+        $("#btnSpinner").addClass('d-none');
+    }
+
+    //locationData
+    async function getProvinceData() {
+        var locationData = $('#Location').val();
+        console.log(locationData);
+
+        await makeGetRequest(baseUrl + "getProvinces").then(async response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#provinceId').append($('<option>', {
+                        value: dataList.location.trim(),
+                        text: dataList.name.trim(),
+                    }));
+                }
+            }
+        });
+
+        var locationName = [];
+        await makeGetRequest(baseUrl + "getByLocation?location=" + locationData).then(async response => {
+            if (response != null) {
+                var data = response.results;
+                if (data != null) {
+                    locationName = data.name.split("-");
+                }
+                console.log(locationName[2]);
+                getSelectValue("provinceId", locationName[2]);
+            }
+        });
+        await provinceChangeListener(locationName[1], locationName[0]);
+    }
+
+    async function provinceChangeListener(District, Satellite) {
+        $('#districtId').empty();
+        $("#districtSpinner").removeClass('d-none');
+
+        var provinceValue = document.getElementById("provinceId").value;
+        await makeGetRequest(baseUrl + `getDistricts?provinceCode=${provinceValue}`).then(async response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#districtId').append($('<option>', {
+                        value: dataList.location.trim(),
+                        text: dataList.name.trim(),
+                    }));
+                }
+                getSelectValue("districtId", District);
+                await districtChangeListener(Satellite);
+            }
+        });
+        $("#districtSpinner").addClass('d-none');
+    }
+
+    async function districtChangeListener(Satellite) {
+        $('#sateliteId').empty();
+        $("#sateliteSpinner").removeClass('d-none');
+
+        var districtValue = document.getElementById("districtId").value;
+        await makeGetRequest(baseUrl + `getSatelites?disctrictCode=${districtValue}`).then(async response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#sateliteId').append($('<option>', {
+                        value: dataList.location.trim(),
+                        text: dataList.name.trim(),
+                    }));
+                }
+                getSelectValue("sateliteId", Satellite);
+                await sateliteChangeListener();
+            }
+        });
+        $("#sateliteSpinner").addClass('d-none');
+    }
+
+    async function sateliteChangeListener() {
+        var sateliteValue = document.getElementById("sateliteId").value;
+        $('#Location').val(sateliteValue);
+    }
+</script>

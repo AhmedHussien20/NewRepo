@@ -1,0 +1,302 @@
+﻿@page
+@model Crop_Management_System.Pages.Views.Devices.DeviceRegistrationModel
+@{
+
+}
+
+<div>
+    <div>
+        <h4 class="mt-4">Device Registration</h4>
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item active"><a href="@Url.Page("/Views/Devices/Index")" class="ml-1 mr-1">Device List</a> / Device Creation</li>
+        </ol>
+    </div>
+
+    <div class="mt-4">
+        <div>
+            <iframe name="dFrame" id="dummyframe" style="display: none;"></iframe>
+            <form id="formData" target="dFrame" onsubmit="submitForm()" enctype="multipart/form-data">
+                <div>
+                    <h5>Location Information</h5>
+                    <div class="border border-info rounded p-3">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label class="font-weight-bold">Province <i class="icofont-dotted-down"></i></label>
+                                <select class="form-control " name="provinceId" id="provinceId" onchange="provinceChangeListener()" required>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="font-weight-bold">
+                                    <span id="districtSpinner" class="d-none spinner-border  spinner-grow-sm"></span>
+                                    District
+                                    <i class="icofont-dotted-down"></i>
+                                </label>
+                                <select class="form-control" name="districtId" id="districtId" onchange="districtChangeListener()" required>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="font-weight-bold">
+                                    <span id="sateliteSpinner" class="d-none spinner-border  spinner-grow-sm"></span>
+                                    Satellite
+                                    <i class="icofont-dotted-down"></i>
+                                </label>
+                                <select class="form-control" name="SateliteId" id="sateliteId" onchange="sateliteChangeListener()" required>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label></label>
+                                <button type="button" class="btn btn-outline-success w-100" onclick="displayDevices()">List Current Devices</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4 mt-4 d-none" id="deviceTable">
+                        <div class="card-header">
+                            <i class="fas fa-table mr-1"></i>
+                            <span id="deviceSpinner" class="d-none spinner-border  spinner-grow-sm"></span>
+                            Current Devices
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                    <thead>
+                                        <tr>
+                                            <th>Device ID</th>
+                                            <th>Location</th>
+                                            <th>Prefix</th>
+                                            <th>Device Name</th>
+                                            <th>SerialNumber</th>
+                                            <th>Buyer</th>
+                                            <th>Date Activated</th>
+                                            <th>Last Sync</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tableData" class=""></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                     
+                    <h5 class="mt-4">Device Information</h5>
+                    <div class="border border-info rounded mt-2 p-3">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label class="font-weight-bold">Device Location</label>
+                                <input type="text" class="form-control" name="Location" id="Location" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="font-weight-bold">Device ID</label>
+                                <input type="text" class="form-control" name="DeviceId" id="deviceID" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="font-weight-bold">Device Serial Number</label>
+                                <input type="text" class="form-control" name="SerialNumber" required>
+                            </div>
+                            <div class="col-md-4 mt-3">
+                                <label class="font-weight-bold">Device Name</label>
+                                <input type="text" class="form-control" name="Title" required>
+                            </div>
+                            <div class="col-md-4 mt-3">
+                                <label class="font-weight-bold">Buyer <i class="icofont-dotted-down"></i></label>
+                                <select class="form-control" name="DeviceBearerId" id="deviceBearerId">
+                                </select>
+                            </div>
+                            <div class="col-md-4 mt-3">
+                                <label class="font-weight-bold">Inspector <i class="icofont-dotted-down"></i></label>
+                                <select class="form-control" name="DeviceSupervisorId" id="DeviceSupervisorId">
+                                </select>
+                            </div>
+                            <div class="col-md-12 mt-3">
+                                <label class="font-weight-bold">Device Status <i class="icofont-dotted-down"></i></label>
+                                <select class="form-control" name="DeviceStatusId" id="deviceStatusId">
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 mt-4 mb-4">
+                            <span id="btnSpinner" class="d-none spinner-border  spinner-grow-sm" role="status" aria-hidden="true"></span>
+                            SUBMIT
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var deviceIdValue = ["", "", ""];
+
+    $(document).ready(async function () { 
+        await getNeededData();
+        await getProvinceData();
+        displayMainBody();  
+    });
+
+    async function getNeededData() {
+        await makeGetRequest(baseUrl + `getAllDeviceStatus`).then(async response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#deviceStatusId').append($('<option>', {
+                        value: dataList.id,
+                        text: dataList.title,
+                    }));
+                }
+            }
+        });
+
+        await makeGetRequest(baseUrl + `getAllStaff`).then(async response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#deviceBearerId').append($('<option>', {
+                        value: dataList.staffId,
+                        text: `${dataList.staffData.firstName} ${dataList.staffData.lastName} - [${dataList.staffData.email}]`,
+                    }));
+                    $('#DeviceSupervisorId').append($('<option>', {
+                        value: dataList.staffId,
+                        text: `${dataList.staffData.firstName} ${dataList.staffData.lastName} - [${dataList.staffData.email}]`,
+                    }));
+                    
+                }
+            }
+        });
+    }
+     
+    async function getProvinceData() {
+        await makeGetRequest(baseUrl + "getProvinces").then(async response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#provinceId').append($('<option>', {
+                        value: dataList.location.trim(),
+                        text: dataList.name.trim(),
+                    }));
+                }
+                await provinceChangeListener();
+            }
+        });
+    }
+
+    async function provinceChangeListener() {
+        $('#districtId').empty();
+        $('#dataTable').DataTable({ "bDestroy": true }).clear();
+        $("#districtSpinner").removeClass('d-none');
+
+        var provinceValue = document.getElementById("provinceId").value;
+        deviceIdValue.splice(0, 1, provinceValue);
+
+        await makeGetRequest(baseUrl + `getDistricts?provinceCode=${provinceValue}`).then(async response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#districtId').append($('<option>', {
+                        value: dataList.location.trim(),
+                        text: dataList.name.trim(),
+                    }));
+                }
+                await districtChangeListener();
+            }
+        });
+        $("#districtSpinner").addClass('d-none');
+    }
+
+    async function districtChangeListener() {
+        $('#sateliteId').empty();
+        $('#dataTable').DataTable({ "bDestroy": true }).clear();
+        $("#sateliteSpinner").removeClass('d-none');
+
+        var districtValue = document.getElementById("districtId").value;
+        deviceIdValue.splice(1, 1, districtValue);
+
+        await makeGetRequest(baseUrl + `getSatelites?disctrictCode=${districtValue}`).then(async response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#sateliteId').append($('<option>', {
+                        value: dataList.location.trim(),
+                        text: dataList.name.trim(),
+                    }));
+                }
+                await sateliteChangeListener();
+            }
+        });
+        $("#sateliteSpinner").addClass('d-none');
+    }
+
+    async function sateliteChangeListener() {
+        var num = 1;
+        $("#deviceSpinner").removeClass('d-none');
+        $('#dataTable').DataTable({ "bDestroy": true }).clear();
+
+        var sateliteValue = document.getElementById("sateliteId").value;
+        deviceIdValue.splice(2, 1, sateliteValue);
+
+        await makeGetRequest(baseUrl + `getDeviceByLocation?location=${sateliteValue}`).then(response => {
+            if (response != null) {
+                for (i in response.results) {
+                    num++;
+                    var dataList = response.results[i];
+                    var statusColor = getStatusColor(dataList.deviceStatusData.title);
+                    $('#dataTable').DataTable({
+                        "order": [[4, "desc"]],
+                        "bDestroy": true
+                    }).row.add([
+                        dataList.deviceId,
+                        dataList.location,
+                        dataList.prefix,
+                        dataList.title,
+                        dataList.serialNumber,
+                        dataList.deviceBearerData.email,
+                        convertTimeStampToDate(dataList.dateCreated),
+                        convertTimeStampToDate(dataList.lastSync),
+                        `<p class="${statusColor}">${dataList.deviceStatusData.title}</p>`
+                    ]).draw();
+                }
+            }
+        });
+        $("#deviceSpinner").addClass('d-none');
+        //deviceIdValue.splice(3, 1, num);
+        $('#Location').val(sateliteValue);
+    }
+
+    async function editDevice(id) {
+        alertify.success(id);
+    }
+
+    async function submitForm() {
+        $("#btnSpinner").removeClass('d-none');
+        var formData = $('#formData').serializeArray().reduce(function (obj, item) {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+
+        formData.SateliteId = formData.SateliteId.split(",")[0];
+        formData.districtId = formData.districtId.split(",")[0];
+        formData.provinceId = formData.provinceId.split(",")[0];
+        console.log(formData);
+
+        await makePostRequest(formData, baseUrl + "createDevices").then(async response => {
+            console.log(response);
+            if (response.error) {
+                alertify.error('Unsuccessful - ' + response.errorMessage);
+                console.log(response.errorMessage);
+            } else {
+                alertify.success("Device Registered");
+                await sateliteChangeListener();
+            }
+            $("#userResponse").fadeIn().removeClass('d-none');
+        });
+
+        $("#btnSpinner").addClass('d-none');
+    }
+
+    function displayDevices() {
+        $("#deviceTable").fadeIn().removeClass('d-none');
+    }
+</script>
+
+

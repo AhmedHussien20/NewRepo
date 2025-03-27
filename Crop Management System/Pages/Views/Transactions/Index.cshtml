@@ -1,0 +1,562 @@
+﻿@page
+@model Crop_Management_System.Pages.Transactions.IndexModel
+@{
+}
+
+<div>
+    <h4 class="mt-4">Transactions</h4>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item active"><a href='@Url.Action("Index","Home")' class="ml-1 mr-1">Dashboard</a> / Transactions</li>
+    </ol>
+
+    <!-- colored cards stats -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-primary text-white mb-4">
+                <div class="card-body">
+                    <!-- fetch user# -->
+                    <h4>Transactions</h4>
+                    <span class="font-weight-bold" id="transNum">00<br>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-warning text-white mb-4">
+                <div class="card-body">
+                    <h4>Pending Transactions</h4>
+                    <span class="font-weight-bold" id="pendingTrans">00<br>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-success text-white mb-4">
+                <div class="card-body">
+                    <h4>Approved Transactions</h4>
+                    <span class="font-weight-bold" id="approvedTrans">00<br>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-info text-white mb-4">
+                <div class="card-body">
+                    <h4>Crop Value</h4>
+                    <span id="revenuNum"><b>K 00,000</b><br>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Filters *@
+    <div class="mb-4">
+        <div class="row">
+            <div class="col-md-6">
+                <a onclick="getProvinceData()" class="btn btn-outline-primary w-100" data-toggle="collapse" href="#locationFilter" role="button" aria-expanded="false"
+                   aria-controls="locationFilter">
+                    <h5>
+                        Location Filter
+                        <i class="icofont-dotted-down"></i>
+                    </h5>
+                </a>
+            </div>
+            <div class="col-md-6">
+                <a class="btn btn-outline-primary w-100" data-toggle="collapse" href="#dateFilter" role="button" aria-expanded="false"
+                   aria-controls="dateFilter">
+                    <h5>
+                        Date Filter
+                        <i class="icofont-dotted-down"></i>
+                    </h5>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @* Location Filter *@
+    <div class="mb-4">
+        <div id="locationFilter" class="collapse border border-info rounded p-3">
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="font-weight-bold">Province <i class="icofont-dotted-down"></i></label>
+                    <select class="form-control " name="provinceId" id="provinceId" onchange="provinceChangeListener()" required>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="font-weight-bold">
+                        <span id="districtSpinner" class="d-none spinner-border  spinner-grow-sm"></span>
+                        District
+                        <i class="icofont-dotted-down"></i>
+                    </label>
+                    <select class="form-control" name="districtId" id="districtId" onchange="districtChangeListener()" required>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="font-weight-bold">
+                        <span id="sateliteSpinner" class="d-none spinner-border  spinner-grow-sm"></span>
+                        Satellite
+                        <i class="icofont-dotted-down"></i>
+                    </label>
+                    <select class="form-control" name="SateliteId" id="sateliteId" onchange="sateliteChangeListener()" required>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Date Filter *@
+    <div class="mb-4">
+        <div id="dateFilter" class="collapse border border-info rounded p-3">
+            <div class="row  ">
+                <div class="col-md-6">
+                    <label class="font-weight-bold">Start Date <i class="icofont-dotted-down"></i></label>
+                    <input id="startDate" type="date" class="form-control" value="" />
+                </div>
+                <div class="col-md-6">
+                    <label class="font-weight-bold">
+                        <span class="d-none spinner-border"></span>
+                        End Date
+                        <i class="icofont-dotted-down"></i>
+                    </label>
+                    <input id="endDate" type="date" class="form-control" value="" />
+                </div>
+                <div class="col-md-12 mt-4">
+                    <button onclick="dateFilter()" class="btn btn-outline-primary w-100">Filter</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- database table -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-table mr-1"></i>
+            Current Transactions
+            <span id="tableSpinner" class="d-none spinner-border  spinner-grow-sm"></span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead class="text-center">
+                        <tr>
+                            <th></th>
+                            <th>PRCN</th>
+                            <th>Farmer Details</th>
+                            <th>Items </th>
+                            <th>Order Details</th>
+                            <th>Location</th>
+                            <th>Verifier</th>
+                            <th>Status</th>
+                            <th>Date Uploaded</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableData" class=""></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modal" class="modal fade ModelDialog" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <iframe name="dFrame" id="dummyframe" style="display: none;"></iframe>
+            <form id="formData" target="dFrame" onsubmit="editForm()" enctype="multipart/form-data">
+                <input type="hidden" name="sTranNo" />
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Transaction Modal</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="font-weight-bold">Transaction Status<i class="icofont-dotted-down"></i></label>
+                        <select class="form-control" name="Status" id="status">
+                            <option value="Approved">Approved</option>
+                            <option value="Retract">Retract</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="btnEdit" type="submit" class="btn btn-primary">
+                        <span id="btnSpinner" class="d-none spinner-border  spinner-grow-sm" role="status" aria-hidden="true"></span>
+                        Save changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    var url;
+    var today = new Date();
+    var startIndex = 0;
+    var batchSize = 100;
+    var dataTable;
+    var responseList = [];
+
+    $(document).ready(async function () {
+        $('#startDate').val(getDateValue(today));
+        $('#endDate').val(getDateValue(today));
+        initializeDatatable();
+        //await getData(false, false, false, getDateValue(today), getDateValue(today), null);
+        await getStats();
+        displayMainBody();
+    });
+
+    async function getStats() {
+        var district = getCookie("district");
+        console.log(district);
+        if (district == "null") {
+            await makeGetRequest(baseUrl + `getTransactionStats`).then(response => {
+                if (response != null) {
+                    var dataList = response.results;
+                    $('#transNum').html(dataList.transactionsCount == "null" ? 0 : dataList.transactionsCount);
+                    $('#pendingTrans').html(dataList.pendingTransactrions == "null" ? 0 : dataList.pendingTransactrions);
+                    $('#approvedTrans').html(dataList.approvedTransactrions == "null" ? 0 : dataList.approvedTransactrions);
+                    $('#revenuNum').html(converToMoneyFormat(dataList.revenue == "null" ? 0 : dataList.revenue));
+                }
+            });
+        } else {
+            await makeGetRequest(baseUrl + `getTransactionStatsByDistrict?districtCode=${district}`).then(response => {
+                if (response != null) {
+                    var dataList = response.results;
+                    $('#transNum').html(dataList.transactionsCount == "null" ? 0 : dataList.transactionsCount);
+                    $('#pendingTrans').html(dataList.pendingTransactrions == "null" ? 0 : dataList.pendingTransactrions);
+                    $('#approvedTrans').html(dataList.approvedTransactrions == "null" ? 0 : dataList.approvedTransactrions);
+                    $('#revenuNum').html(converToMoneyFormat(dataList.revenue == "null" ? 0 : dataList.revenue));
+                }
+            });
+        }
+
+    }
+
+    async function getData(shouldFilter, dateFilter, locationFilter, startDate, endDate, location) {
+        $("#tableSpinner").removeClass('d-none');
+        // $('#dataTable').DataTable({ "bDestroy": true }).clear();
+        var formData = {
+            "startDate": startDate,
+            "endDate": endDate,
+            "shouldFilter": shouldFilter,
+            "dateFilter": dateFilter,
+            "locationFilter": locationFilter,
+            "location": location,
+            "startIndex": startIndex,
+            "batchSize": batchSize
+        };
+
+        console.log(formData);
+        await makePostRequest(formData, baseUrl + "getAllPRCN").then(response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    responseList.push(dataList);
+                    dataTable.row.add([
+                        `<input type="checkbox" data-id="${dataList.Id}" />`,
+                        dataList.sTranNo,
+                        `<label class="small">Name: <br><b>${dataList.sVendorName}</b></label>
+                         <label class="small">NRC: <br><b>${dataList.sVendorID}</b></label>`,
+                        `<label class="small">Crop: <br><b>${dataList.sItemDescr}</b></label><br>`,
+                        `<label class="small">NoOfBags: <br><b>${dataList.noOfBags}</b></label><br>
+                         <label class="small">UnitCost: <br><b>${dataList.sUnitCost}</b></label>
+                         <label class="small">Total: <br><b>${checkIfValid(dataList.dDocTotal, dataList.retractedAmount, dataList.status)}</b></label>`,
+                        `<label class="small">Province: <br><b>${dataList.province}</b></label><br>
+                         <label class="small">District: <br><b>${dataList.district}</b></label><br>
+                         <label class="small">Satelite: <br><b>${dataList.satelite}</b></label>`,
+                        `<label class="small">Name: <br><b>${dataList.verifyUser}</b></label><br>
+                         <label class="small">Date Verified: <br><b>${convertTimeStampToDate(dataList.dateverify)}</b></label>`,
+                        highlightStatus(dataList.status, i),
+                        dataList.dtDateTime,
+                        `<div class="d-flex justify-content-between">
+                            ${dataList.status != 'Pending' ?
+                            `<button class="btn bg-transparent text-success" disabled>Change Status</button>` :
+                            `<button class="btn bg-transparent text-success" onclick="editModel('${dataList.sTranNo}', '${dataList.status}')">Change Status</button>`}
+                        </div>`,
+                    ]);
+                }
+                dataTable.draw(false);
+                startIndex += batchSize;
+                const checkboxes = document.querySelectorAll('#dataTable input[type="checkbox"]');
+                checkboxes.forEach((checkbox) => {
+                    checkbox.addEventListener('change', handleCheckboxChange);
+                });
+            }
+        });
+        $("#tableSpinner").addClass('d-none');
+    }
+
+    // Function to handle checkbox change event (same as before)
+    function handleCheckboxChange(event) {
+        const row = event.target.parentNode.parentNode;
+        // Do something with the checkbox state and the associated data
+        if (event.target.checked) {
+            console.log(`Checkbox in row ${row.rowIndex} is checked.`);
+            console.log(row.cells[1].innerText);
+        } else {
+            console.log(`Checkbox in row ${row.rowIndex} is unchecked.`);
+        }
+    }
+    window.addEventListener("scroll", async function () {
+        var windowHeight = window.innerHeight;
+        var documentHeight = document.documentElement.scrollHeight;
+        var scrollPosition = window.scrollY || window.pageYOffset || document.body.scrollTop || document.documentElement.scrollTop;
+        if (scrollPosition + windowHeight >= documentHeight) {
+            // Bottom of the page is reached
+            console.log('Bottom of the page is reached');
+            // Your code here to handle the event when the bottom of the page is reached
+            // For example, you can load more data, trigger lazy loading, or perform any other action.
+            var sateliteValue = document.getElementById("sateliteId").value;
+            console.log(sateliteValue);
+            if (sateliteValue != null && sateliteValue != "") {
+                await getData(true, false, true, getDateValue(today), getDateValue(today), sateliteValue);
+            } else {
+                await getData(false, false, false, getDateValue(today), getDateValue(today), null);
+            }
+            console.log(startIndex.toString());
+        }
+    });
+
+    /*function editModel(index) {
+        var table = $('#dataTable').DataTable();
+        var Id = table.row(index).data()[0];
+        var Status = $(`#status_${index}`).html();
+        console.log(Status);
+        $('input[name=sTranNo]').val(Id);
+        console.log(index);
+        getSelectValue("status", Status);
+        $('#modal').modal('show');
+    }*/
+
+    function editModel(sTranNo, status) {
+        var table = $('#dataTable').DataTable();
+        var Id = sTranNo;
+        var Status = status;
+        console.log(Status);
+        $('input[name=sTranNo]').val(Id);
+        console.log(Id);
+        getSelectValue("status", Status);
+        $('#modal').modal('show');
+    }
+
+    async function editForm() {
+        $("#btnSpinner").removeClass('d-none');
+        var formData = $('#formData').serializeArray().reduce(function (obj, item) {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+        console.log(formData);
+
+        await makePostRequest(formData, baseUrl + "updatePRCN").then(async response => {
+            console.log(response);
+            if (response.error) {
+                alertify.error('Unsuccessful - ' + response.errorMessage);
+                console.log(response.errorMessage);
+            } else {
+                //$('#dataTable').DataTable({ "bDestroy": true }).clear();
+                //await getData();
+                //await getStats();
+                alertify.success("Record Updated");
+            }
+        });
+
+        $("#btnSpinner").addClass('d-none');
+        $('#modal').modal('hide');
+
+    }
+
+    //date Filter
+    async function dateFilter() {
+        var startDate = $('#startDate').val();
+        var endDate = $('#endDate').val();
+        var sateliteValue = document.getElementById("sateliteId").value;
+        var filterLocation = true;
+        if (sateliteValue == null || sateliteValue == '') {
+            filterLocation = false;
+        }
+        //$('#dataTable').DataTable({ "bDestroy": true }).clear();
+        startIndex = 0;
+        responseList = [];
+        dataTable.clear().draw();
+        filterDate = true;
+        await getData(true, filterDate, filterLocation, startDate, endDate, null);
+    }
+
+    async function getProvinceData() {
+        var province = getCookie("province");
+        console.log(province);
+        if (province == "null") {
+            await makeGetRequest(baseUrl + "getProvinces").then(async response => {
+                if (response != null) {
+                    for (i in response.results) {
+                        var dataList = response.results[i];
+                        $('#provinceId').append($('<option>', {
+                            value: dataList.location.trim(),
+                            text: dataList.name.trim(),
+                        }));
+                    }
+                    await provinceChangeListener();
+                }
+            });
+        } else {
+            await makeGetRequest(baseUrl + `getProvincesByCode?provinceCode=${province}`).then(async response => {
+                if (response != null) {
+                    for (i in response.results) {
+                        var dataList = response.results[i];
+                        $('#provinceId').append($('<option>', {
+                            value: dataList.location.trim(),
+                            text: dataList.name.trim(),
+                        }));
+                    }
+                    await provinceChangeListener();
+                }
+            });
+        }
+
+    }
+
+    async function provinceChangeListener() {
+        $('#districtId').empty();
+        //$('#dataTable').DataTable({ "bDestroy": true }).clear();
+        dataTable.clear().draw();
+        responseList = [];
+        $("#districtSpinner").removeClass('d-none');
+        var district = getCookie("district");
+        var provinceValue = document.getElementById("provinceId").value;
+        if (district == "null") {
+            await makeGetRequest(baseUrl + `getDistricts?provinceCode=${provinceValue}`).then(async response => {
+                if (response != null) {
+                    for (i in response.results) {
+                        var dataList = response.results[i];
+                        $('#districtId').append($('<option>', {
+                            value: dataList.location.trim(),
+                            text: dataList.name.trim(),
+                        }));
+                    }
+                    await districtChangeListener();
+                }
+            });
+        } else {
+            await makeGetRequest(baseUrl + `getDistrictsByName?provinceCode=${provinceValue}&district=${district}`).then(async response => {
+                if (response != null) {
+                    for (i in response.results) {
+                        var dataList = response.results[i];
+                        $('#districtId').append($('<option>', {
+                            value: dataList.location.trim(),
+                            text: dataList.name.trim(),
+                        }));
+                    }
+                    await districtChangeListener();
+                }
+            });
+        }
+
+        $("#districtSpinner").addClass('d-none');
+    }
+
+    async function districtChangeListener() {
+        $('#sateliteId').empty();
+        //$('#dataTable').DataTable({ "bDestroy": true }).clear();
+        dataTable.clear().draw();
+        responseList = [];
+        $("#sateliteSpinner").removeClass('d-none');
+
+        var districtValue = document.getElementById("districtId").value;
+        await makeGetRequest(baseUrl + `getSatelites?disctrictCode=${districtValue}`).then(async response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#sateliteId').append($('<option>', {
+                        value: dataList.location.trim(),
+                        text: dataList.name.trim(),
+                    }));
+                }
+                await sateliteChangeListener();
+            }
+        });
+        $("#sateliteSpinner").addClass('d-none');
+    }
+
+    async function sateliteChangeListener() {
+        $("#deviceSpinner").removeClass('d-none');
+        //$('#dataTable').DataTable({ "bDestroy": true }).clear();
+        responseList = [];
+
+        var sateliteValue = document.getElementById("sateliteId").value;
+        startIndex = 0;
+        dataTable.clear().draw();
+        initializeDatatable();
+        await getData(true, filterDate, true, getDateValue(today), getDateValue(today), sateliteValue);
+        $("#deviceSpinner").addClass('d-none');
+    }
+    //end of date filter
+
+    function highlightStatus(val, index) {
+        if (val == 'Pending') {
+            return `<i class="text-warning" id='status_${index}'>${val}</i>`
+        } else if (val == 'Approved') {
+            return `<i class="text-success" id='status_${index}'>${val}</i>`
+        } else if (val == 'Posted') {
+            return `<i class="text-secondary" id='status_${index}'>${val}</i>`
+        } else if (val == 'Retract') {
+            return `<i class="text-danger" id='status_${index}'>${val}</i>`
+        } else {
+            return `<i class="text-info" id='status_${index}'>${val}</i>`
+        }
+    }
+
+    function checkIfValid(val, retractedAmount, status) {
+        status = status.toLowerCase();
+        if (status == "retract") {
+            return `<p class="text-danger"><del>${converToMoneyFormat(retractedAmount)}</del></p>
+                    <p class="text-danger">${converToMoneyFormat(0)}</p>`;
+        } else {
+            return ` <p class="text-success">${converToMoneyFormat(val)}</p>`;
+        }
+    }
+
+    function initializeDatatable() {
+        dataTable = $('#dataTable').DataTable({
+            dom: 'Bfrti',
+            buttons: [
+                'copy', {
+                    text: 'CSV', action: function (e, dt, node, config) {
+                        // Define headers for the Excel file
+                        const headers = ['sTranNo', 'rcpno', 'dtDateTime', 'verifyDate', 'sVendorID', 'sVendorName', 'Province', 'District', 'Satelite', 'sItemNo', 'sItemDescr', 'sUnit', 'NoOfBags', 'sUnitCost', 'dDocTotal', 'bclpost', 'bcllisting', 'RetractedAmount', 'Status', 'verifyUser', 'RetractedNumberOfBags', 'DateModifyBy', 'DateModify'];
+                        const csvData = [headers, ...responseList.map(row => Object.values(row))];
+                        const csvContent = csvData.map(row => row.join(',')).join('\n');
+                        const csvBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                        const csvURL = URL.createObjectURL(csvBlob);
+                        const link = document.createElement('a');
+                        link.setAttribute('href', csvURL);
+                        link.setAttribute('download', 'CropManagementSystem_PRCN.csv');
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
+                }, {
+                    text: 'EXCEL', action: function (e, dt, node, config) {
+                        // Define headers for the Excel file
+                        const headers = ['sTranNo', 'rcpno', 'dtDateTime', 'verifyDate', 'sVendorID', 'sVendorName', 'Province', 'District', 'Satelite', 'sItemNo', 'sItemDescr', 'sUnit', 'NoOfBags', 'sUnitCost', 'dDocTotal', 'bclpost', 'bcllisting', 'RetractedAmount', 'Status', 'verifyUser', 'RetractedNumberOfBags', 'DateModifyBy', 'DateModify'];
+                        const csvData = [headers, ...responseList.map(row => Object.values(row))];
+                        const csvContent = csvData.map(row => row.join(',')).join('\n');
+                        const csvBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                        const csvURL = URL.createObjectURL(csvBlob);
+                        const link = document.createElement('a');
+                        link.setAttribute('href', csvURL);
+                        link.setAttribute('download', 'CropManagementSystem_PRCN.csv');
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
+                }, 'pdf', 'print'
+            ],
+            "pageLength": 20000,
+            "columnDefs": [{ "width": "15%", "targets": 5 }],
+            "order": [[7, "desc"]],
+            "bDestroy": true,
+        });
+    }
+</script>
+
+

@@ -1,0 +1,611 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div>
+    <h4 class="mt-4">Dashboard</h4>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item active">Dashboard</li>
+    </ol>
+
+    <!-- colored cards stats -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-primary text-white mb-4">
+                <div class="card-body">
+                    <!-- fetch user# -->
+                    <h4>Transactions</h4>
+                    <span class="font-weight-bold" id="transNum">00<br>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-warning text-white mb-4">
+                <div class="card-body">
+                    <h4>Farmers</h4>
+                    <span class="font-weight-bold" id="farnNums">00<br>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-info text-white mb-4">
+                <div class="card-body">
+                    <h5>Total Bags & Metric Tones</h5>
+                    <span class="font-weight-bold" id="deviceNum">00<br>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-success text-white mb-4">
+                <div class="card-body">
+                    <h4>Crop Value</h4>
+                    <span id="revenuNum"><b>00</b><br>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Filters *@
+    <div class="mb-4">
+        <div class="row">
+            <div class="col-md-6">
+                <a onclick="getProvinceData()" class="btn btn-outline-primary w-100" data-toggle="collapse" href="#locationFilter" role="button" aria-expanded="false"
+                   aria-controls="locationFilter">
+                    <h5>
+                        Location & Crop Filter
+                        <i class="icofont-dotted-down"></i>
+                    </h5>
+                </a>
+            </div>
+            <div class="col-md-6">
+                <a class="btn btn-outline-primary w-100" data-toggle="collapse" href="#dateFilter" role="button" aria-expanded="false"
+                   aria-controls="dateFilter">
+                    <h5>
+                        Date Filter
+                        <i class="icofont-dotted-down"></i>
+                    </h5>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @* Location Filter *@
+    <div class="mb-4">
+        <div id="locationFilter" class="collapse border border-info rounded p-3">
+            <div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <label class="font-weight-bold">Province <i class="icofont-dotted-down"></i></label>
+                        <select class="form-control " name="provinceId" id="provinceId" onchange="provinceChangeListener()" required>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="font-weight-bold">
+                            <span id="districtSpinner" class="d-none spinner-border  spinner-grow-sm"></span>
+                            District
+                            <i class="icofont-dotted-down"></i>
+                        </label>
+                        <select class="form-control" name="districtId" id="districtId" onchange="districtChangeListener()" required>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="font-weight-bold">
+                            <span id="sateliteSpinner" class="d-none spinner-border  spinner-grow-sm"></span>
+                            Satellite
+                            <i class="icofont-dotted-down"></i>
+                        </label>
+                        <select class="form-control" name="SateliteId" id="sateliteId" onchange="sateliteChangeListener()" required>
+                        </select>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="font-weight-bold">CROP<i class="icofont-dotted-down"></i></label>
+                        <select class="form-control " name="cropId" id="cropId" onchange="sateliteChangeListener()" required>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Date Filter *@
+    <div class="mb-4">
+        <div id="dateFilter" class="collapse border border-info rounded p-3">
+            <div class="row  ">
+                <div class="col-md-6">
+                    <label class="font-weight-bold">Start Date <i class="icofont-dotted-down"></i></label>
+                    <input id="startDate" type="date" class="form-control" value="" />
+                </div>
+                <div class="col-md-6">
+                    <label class="font-weight-bold">
+                        <span class="d-none spinner-border"></span>
+                        End Date
+                        <i class="icofont-dotted-down"></i>
+                    </label>
+                    <input id="endDate" type="date" class="form-control" value="" />
+                </div>
+                <div class="col-md-12 mt-4">
+                    <button onclick="dateFilter()" class="btn btn-outline-primary w-100">Filter</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- charts -->
+    <div class="row">
+        <!-- sold products -->
+        <div class="col-xl-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-chart-area mr-1"></i>
+                    Transactions per Month <i class="small">(No. Bags)</i>
+                </div>
+                <div class="card-body"><canvas id="monthRecords" width="100%" height="40"></canvas></div>
+            </div>
+        </div>
+
+        <!-- best selling products -->
+        <div class="col-xl-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-chart-bar mr-1"></i>
+                    Transactions for past Week <i class="small">(No. Bags)</i>
+                </div>
+                <div class="card-body"><canvas id="weekRecords" width="100%" height="40"></canvas></div>
+            </div>
+        </div>
+
+        <div class="col-xl-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-chart-bar mr-1"></i>
+                    Satellite Transactions <i class="small">(No. Bags)</i>
+                </div>
+                <div class="card-body"><canvas id="stationRecords" width="100%" height="40"></canvas></div>
+            </div>
+        </div>
+
+        <div class="col-xl-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-chart-bar mr-1"></i>
+                    Most Purchased Crops
+                </div>
+                <div class="card-body"><canvas id="cropRecords" width="100%" height="40"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- database table -->
+    <!--<div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-table mr-1"></i>
+            Current Devices
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Device ID</th>
+                            <th>Device Name</th>
+                            <th>SerialNumber</th>
+                            <th>Device Bearer</th>
+                            <th>Location Data</th>
+                            <th>Date Activated</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableData"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>-->
+</div>
+
+<script>
+    $(document).ready(async function () {
+        await generateCharts(provinceId = null, districtId = null, satelliteId = null,
+            startDateFilter = new Date(2021, 0, 1).toISOString(), endDateFilter = new Date(9090, 0, 12).toISOString(), shouldFilter = false);
+        //await getDevicesData();
+        await getStats(provinceId = null, districtId = null, satelliteId = null,
+            startDateFilter = new Date(2021, 0, 1).toISOString(), endDateFilter = new Date(9090, 0, 12).toISOString(), shouldFilter = false);
+        displayMainBody();
+
+    });
+
+    async function getStats(provinceId, districtId, satelliteId, startDateFilter, endDateFilter, shouldFilter, cropId) {
+        var formData = {
+            "provinceId": provinceId,
+            "districtId": districtId,
+            "satelliteId": satelliteId,
+            "endDateFilter": endDateFilter,
+            "startDateFilter": startDateFilter,
+            "shouldFilter": shouldFilter,
+            "cropId": cropId
+        }
+
+        console.log(formData);
+        await makePostRequest(formData, baseUrl + "getDashboardStats").then(response => {
+            if (response != null) {
+                var dataList = response.results;
+                console.log(dataList);
+                $('#transNum').html(dataList.transactionsCount);
+                $('#farnNums').html(dataList.farmerCount);
+                $('#deviceNum').html(dataList.totalBags + " | " + dataList.totalBags / 20 + "t");
+                $('#revenuNum').html(converToMoneyFormat(dataList.revenue));
+            }
+        });
+    }
+
+    async function generateCharts(provinceId, districtId, satelliteId, startDateFilter, endDateFilter, shouldFilter, cropId) {
+        var formData = {
+            "provinceId": provinceId,
+            "districtId": districtId,
+            "satelliteId": satelliteId,
+            "endDateFilter": endDateFilter,
+            "startDateFilter": startDateFilter,
+            "shouldFilter": shouldFilter,
+            "cropId": cropId
+        }
+
+        await makePostRequest(formData, baseUrl + `getTransactionStatsByYear`).then(response => {
+            if (response != null) {
+                var data = [];
+                var label = [];
+                for (i in response.results) {
+                    var colors = getRandomColor();
+                    var dataList = response.results[i];
+
+                    data.push(dataList.total);
+                    label.push(getMonth(dataList.month));
+
+                    var ctx = document.getElementById('monthRecords').getContext('2d');
+                    var myChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: label,
+                            datasets: [{
+                                label: `${dataList.year} Transactions`,
+                                data: data,
+                                borderColor: colors,
+
+                            }]
+                        }
+                    });
+                }
+            }
+        });
+
+        await makePostRequest(formData, baseUrl + `getTransactionStatsByWeek`).then(response => {
+            if (response != null) {
+                var data = [];
+                var label = [];
+                for (i in response.results) {
+                    var colors = getRandomColor();
+                    var dataList = response.results[i];
+
+                    data.push(dataList.total);
+                    label.push(getDay(dataList.week));
+
+                    var ctx = document.getElementById('weekRecords').getContext('2d');
+                    var myChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: label,
+                            datasets: [{
+                                label: `${getMonth(dataList.month)} Transactions`,
+                                data: data,
+                                borderColor: colors,
+                            }]
+                        }
+                    });
+                }
+            }
+        });
+
+        await makePostRequest(formData, baseUrl + `getTransactionStatsBySatelietSales`).then(response => {
+            if (response != null) {
+                var data = [];
+                var label = [];
+                for (i in response.results) {
+                    var colors = generateColor();
+                    var dataList = response.results[i];
+                     
+                    data.push(dataList.total);
+                    label.push(dataList.name.split(' - ')[0]);
+
+                    var ctx = document.getElementById('stationRecords').getContext('2d');
+                    var myChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: label,
+                            datasets: [{
+                                label: `Satelite Transactions`,
+                                data: data,
+                                borderColor: colors,
+                                backgroundColor: colors
+                            }]
+                        }
+                    });
+                }
+            }
+        });
+
+        await makePostRequest(formData, baseUrl + `getTransactionStatsByCropsSold`).then(response => {
+            if (response != null) {
+                var data = [];
+                var label = [];
+                for (i in response.results) {
+                    var colors = generateColor();
+                    var dataList = response.results[i];
+
+                    data.push(dataList.total);
+                    label.push(dataList.title);
+
+                    var ctx = document.getElementById('cropRecords').getContext('2d');
+                    var myChart = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: label,
+                            datasets: [{
+                                label: `Satelite Transactions`,
+                                data: data,
+                                borderColor: colors,
+                                backgroundColor: colors
+                            }]
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    /*async function getDevicesData() {
+        await makeGetRequest(baseUrl + `getAllDevices`).then(response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    var bearerEmail;
+                    var deviceStatus;
+                    var location;
+
+                    if (dataList.deviceBearerData != null) {
+                        bearerEmail = dataList.deviceBearerData.email;
+                    } else {
+                        bearerEmail = `<p class="text-danger">UNSET</p>`;
+                    }
+
+                    if (dataList.deviceStatusData != null) {
+                        var statusColor = getStatusColor(dataList.deviceStatusData.title);
+                        deviceStatus = `<p class="${statusColor}">${dataList.deviceStatusData.title}</p>`
+                    } else {
+                        deviceStatus = `<p class="text-danger">UNSET</p>`
+                    }
+
+                    if (dataList.netPurLocationModel != null) {
+                        location = `
+                         <label class="small">Code: <b>${dataList.location}</b></label>
+                         <label class="small">location: <b>${dataList.netPurLocationModel.name}</b></label>`
+                    } else {
+                        location = `<p class="text-danger">UNSET</p>`
+                    }
+
+                    $('#dataTable').DataTable({
+                        "order": [[6, "desc"]],
+                        "bDestroy": true
+                    }).row.add([
+                        dataList.id,
+                        dataList.deviceId,
+                        dataList.title,
+                        dataList.serialNumber,
+                        bearerEmail,
+                        location,
+                        convertTimeStampToDate(dataList.dateCreated),
+                        deviceStatus,
+                    ]).draw();
+                }
+            }
+        });
+    }*/
+
+    function getMonth(num) {
+        var month;
+        switch (num) {
+            case 1:
+                month = "January"
+                break;
+            case 2:
+                month = "February"
+                break;
+            case 3:
+                month = "March"
+                break;
+            case 4:
+                month = "April"
+                break;
+            case 5:
+                month = "May"
+                break;
+            case 6:
+                month = "June"
+                break;
+            case 7:
+                month = "July"
+                break;
+            case 8:
+                month = "August"
+                break;
+            case 9:
+                month = "September"
+                break;
+            case 10:
+                month = "October"
+                break;
+            case 11:
+                month = "November"
+                break;
+            case 12:
+                month = "December"
+                break;
+        }
+        return month;
+    }
+
+    function getDay(num) {
+        var month;
+        console.log(num);
+        switch (num) {
+            case "1":
+                month = "Sun"
+                break;
+            case "2":
+                month = "Mon"
+                break;
+            case "3":
+                month = "Tue"
+                break;
+            case "4":
+                month = "Wed"
+                break;
+            case "5":
+                month = "Thur"
+                break;
+            case "6":
+                month = "Fri"
+                break;
+            case "7":
+                month = "Sat"
+        }
+        return month;
+    }
+
+
+    //date Filter
+    async function dateFilter() {
+        var startDate = $('#startDate').val();
+        var endDate = $('#endDate').val();
+        //$('#dataTable').DataTable({ "bDestroy": true }).clear();
+        var provinceValue = document.getElementById("provinceId").value;
+        var districtValue = document.getElementById("districtId").value;
+        var sateliteValue = document.getElementById("sateliteId").value;
+        var startDate = $('#startDate').val();
+        var endDate = $('#endDate').val();
+        var cropId = document.getElementById("cropId").value;
+
+        if (startDate == "") {
+            startDate = new Date(2021, 0, 1).toISOString();
+            endDate = new Date(9999, 0, 1).toISOString()
+        }
+
+        await getStats(provinceId = provinceValue, districtId = districtValue, satelliteId = sateliteValue,
+            startDateFilter = startDate, endDateFilter = endDate, shouldFilter = true, cropId);
+        await generateCharts(provinceId = provinceValue, districtId = districtValue, satelliteId = sateliteValue,
+            startDateFilter = startDate, endDateFilter = endDate, shouldFilter = true, cropId);
+    }
+
+    async function getProvinceData() {
+        await makeGetRequest(baseUrl + `getAllCrops`).then(async response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#cropId').append($('<option>', {
+                        value: dataList.fmtitemno,
+                        text: dataList.title,
+                    }));
+                }
+            }
+        });
+
+        await makeGetRequest(baseUrl + "getProvinces").then(async response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#provinceId').append($('<option>', {
+                        value: dataList.location.trim(),
+                        text: dataList.name.trim(),
+                    }));
+                }
+                await provinceChangeListener();
+            }
+        });
+    }
+
+    async function provinceChangeListener() {
+        $('#districtId').empty();
+        $('#dataTable').DataTable({ "bDestroy": true }).clear();
+        $("#districtSpinner").removeClass('d-none');
+
+        var provinceValue = document.getElementById("provinceId").value;
+        await makeGetRequest(baseUrl + `getDistricts?provinceCode=${provinceValue}`).then(async response => {
+            if (response != null) {
+                $('#districtId').append($('<option>', {
+                    value: null,
+                    text: null,
+                }));
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#districtId').append($('<option>', {
+                        value: dataList.location.trim(),
+                        text: dataList.name.trim(),
+                    }));
+                }
+                await districtChangeListener();
+            }
+        });
+        $("#districtSpinner").addClass('d-none');
+    }
+
+    async function districtChangeListener() {
+        $('#sateliteId').empty();
+        $('#dataTable').DataTable({ "bDestroy": true }).clear();
+        $("#sateliteSpinner").removeClass('d-none');
+
+        var districtValue = document.getElementById("districtId").value;
+        await makeGetRequest(baseUrl + `getSatelites?disctrictCode=${districtValue}`).then(async response => {
+            if (response != null) {
+                $('#sateliteId').append($('<option>', {
+                    value: null,
+                    text: null,
+                }));
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#sateliteId').append($('<option>', {
+                        value: dataList.location.trim(),
+                        text: dataList.name.trim(),
+                    }));
+                }
+                await sateliteChangeListener();
+            }
+        });
+        $("#sateliteSpinner").addClass('d-none');
+    }
+
+    async function sateliteChangeListener() {
+        $("#deviceSpinner").removeClass('d-none');
+        $('#dataTable').DataTable({ "bDestroy": true }).clear();
+
+        var provinceValue = document.getElementById("provinceId").value;
+        var districtValue = document.getElementById("districtId").value;
+        var sateliteValue = document.getElementById("sateliteId").value;
+        var cropId = document.getElementById("cropId").value;
+        var startDate = $('#startDate').val();
+        var endDate = $('#endDate').val();
+
+        if (startDate == "") {
+            startDate = new Date(2021, 0, 1).toISOString();
+            endDate = new Date(9999, 0, 1).toISOString()
+        }
+
+        await getStats(provinceId = provinceValue, districtId = districtValue, satelliteId = sateliteValue,
+            startDateFilter = startDate, endDateFilter = endDate, shouldFilter = true, cropId);
+        await generateCharts(provinceId = provinceValue, districtId = districtValue, satelliteId = sateliteValue,
+            startDateFilter = startDate, endDateFilter = endDate, shouldFilter = true, cropId);
+        $("#deviceSpinner").addClass('d-none');
+    }
+    //end of date filter
+</script>
+
+

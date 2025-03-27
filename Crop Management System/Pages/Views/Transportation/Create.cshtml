@@ -1,0 +1,253 @@
+﻿@{
+    ViewData["Title"] = "Transporter Form";
+}
+
+<div class="main-content flex-grow-1">
+    <div class="my-2">
+        <ol class="list-unstyled">
+            <li class="active">
+                <a href="@Url.Page("/Views/Transporter/Index")" class="ml-1 mr-1">Transporters</a> /
+                <span class="">Create Transporter</span>
+            </li>
+        </ol>
+
+    </div>
+    <!-- Basic Layout -->
+    <form id="formData" enctype="multipart/form-data">
+        <input type="hidden" name="createdBy" value="" id="createdBy">
+        <input type="hidden" name="modifyBy" value="" id="modifyBy">
+        
+        <div class="row g-2">
+            <div class="col-sm-12 col-md-6">
+                <div class="card mb-0">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Basic Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div>
+                            <div class="form-floating form-floating-outline mb-4">
+                                <input type="text" class="form-control" name="Transporter" id="Transporter" placeholder="Transporter" required />
+                                <label for="Transporter">Transporter</label>
+                            </div>
+                            <div class="form-floating form-floating-outline mb-4">
+                                <input type="text" class="form-control" name="VehicleNumber" id="VehicleNumber" placeholder="Vehicle Number" required />
+                                <label for="VehicleNumber">Vehicle Number</label>
+                            </div>
+                            <div class="form-floating form-floating-outline mb-4">
+       q1                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           mmmmm                                                                                   mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   m,,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <input type="text" class="form-control" name="PhoneNumber" id="PhoneNumber" placeholder="Phone Number" />
+                                <label for="PhoneNumber">Phone Number</label>
+                            </div>
+                            <div class="form-floating form-floating-outline mb-4">
+                                <input type="email" class="form-control" name="Email" id="Email" placeholder="Email" />
+                                <label for="Email">Email</label>
+                            </div>
+                            <div class="form-floating form-floating-outline mb-4">
+                                <select class="form-control " name="TransporterType" id="TransporterType" required>
+                                    <option value="COMACO" selected>Comaco</option>
+                                    <option value="HIRED">Hired</option>
+                                </select>
+                                <label for="TransporterType">Transporter Type</label>
+                            </div>
+                            <div class="form-floating form-floating-outline mb-4">
+                                <select class="form-control " name="Status" id="Status" required>
+                                    <option value="Activated" selected>Activated</option>
+                                    <option value="Deactivated">Deactivated</option>
+                                </select>
+                                <label for="Status">Status</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-6">
+                <div class="card mb-0">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Cost Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div>
+                            <div class="form-floating form-floating-outline mb-4">
+                                <input type="number" class="form-control" name="Consumption" id="Consumption" placeholder="Consumption" required />
+                                <label for="Consumption">Consumption</label>
+                            </div>
+                            <div class="form-floating form-floating-outline mb-4">
+                                <input type="number" class="form-control" name="Distance" id="Distance" placeholder="Distance" required />
+                                <label for="Distance">Distance</label>
+                            </div>
+                            <div class="form-floating form-floating-outline mb-4">
+                                <input type="number" class="form-control" name="Rate" id="Rate" placeholder="Rate" />
+                                <label for="Rate">Rate</label>
+                            </div>
+                            <div class="form-floating form-floating-outline mb-4">
+                                <input type="number" class="form-control" name="TaxValue" id="TaxValue" placeholder="Tax Value" />
+                                <label for="TaxValue">Tax Value</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        <div class="row g-2">
+            <div class="col-sm-12 col-md-6">
+                <div class="card mb-0">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Location Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div>
+                            <div class="form-floating form-floating-outline mb-4">
+                                <span class="d-none spinner-border spinner-grow-sm data-loader-spinner" id="provinceSpinner"></span>
+                                <select class="form-control " name="ProvinceCode" id="ProvinceCode" onchange="provinceChangeListener()" required>
+                                </select>
+                                <input class="visually-hidden" name="ProvinceName" id="ProvinceName" />
+                                <label for="ProvinceCode">Province</label>
+                            </div>
+                            <div class="form-floating form-floating-outline mb-4">
+                                <span class="d-none spinner-border spinner-grow-sm data-loader-spinner" id="districtSpinner"></span>
+                                <select class="form-control" name="DistrictCode" id="DistrictCode" onchange="districtChangeListener()" required>
+                                </select>
+                                <input class="visually-hidden" name="DistrictName" id="DistrictName" />
+                                <label for="DistrictCode">Farmer Service Centre</label>
+                            </div>
+                            <div class="form-floating form-floating-outline mb-4">
+                                <span class="d-none spinner-border spinner-grow-sm data-loader-spinner" id="SateliteSpinner"></span>
+                                <select class="form-control" name="ChiefdomCode" id="ChiefdomCode" required>
+                                </select>
+                                <input class="visually-hidden" name="ChiefdomName" id="ChiefdomName" />
+                                <label for="ChiefdomName">Chiefdom</label>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-6">
+                <div class="card mb-0">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Additional Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div>
+                            <div class="form-floating form-floating-outline mb-4">
+                                <textarea style="min-height: 110px;" class="form-control" name="Notes" id="Notes"></textarea>
+                                <label for="Notes">Notes</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button type="button" class="btn btn-primary w-100 mt-4" onclick="submitForm()" id="submitButton">
+            <span id="btnSpinner" class="d-none spinner-border  spinner-grow-sm" role="status" aria-hidden="true"></span>
+            <span class="tf-icons mdi mdi-checkbox-marked-circle-outline me-1" id="btnIcon"></span>SUBMIT
+        </button>
+    </form>
+</div>
+
+<script>
+
+    $(document).ready(async function () {
+        var userRole = getCookie("userRole");
+        var userName = getCookie("userName");
+
+        if (!["Admin", "Regional Business Manager", "Warehouse Supervisor"].includes(userRole)) {
+            window.location.href = "/Unauthorized";
+        }
+        await getProvinceData();
+        $('#createdBy').val(userName);
+    });
+
+
+    async function getProvinceData() {
+        $('#ProvinceCode').empty();
+        $("#provinceSpinner").removeClass('d-none');
+
+        await makeGetRequest(baseUrl + "getProvinces").then(async response => {
+            if (response && response.results) {
+                response.results.forEach(dataList => {
+                    $('#ProvinceCode').append($('<option>', {
+                        value: dataList.location.trim(),
+                        text: dataList.name.trim(),
+                    }));
+                });
+
+                var provinceCode = document.getElementById('ProvinceCode').value;
+                $('#ProvinceName').empty();
+                var province = response.results.find(p => p.location === provinceCode);
+                document.getElementById('ProvinceName').value = province.name;
+                await provinceChangeListener();
+                $("#provinceSpinner").addClass('d-none');
+            }
+        });
+    }
+
+
+    // Function to handle district change event
+    async function districtChangeListener() {
+        $('#ChiefdomCode').empty();
+        $("#sateliteSpinner").removeClass('d-none');
+
+        var districtValue = document.getElementById("DistrictCode").value;
+        await makeGetRequest(baseUrl + `getSatelites?disctrictCode=${districtValue}`).then(async response => {
+            if (response && response.results) {
+                response.results.forEach(dataList => {
+                    $('#ChiefdomCode').append($('<option>', {
+                        value: dataList.location.trim(),
+                        text: dataList.name.trim(),
+                    }));
+                });
+
+                var chiefdomCode = document.getElementById('ChiefdomCode').value;
+                $('#ChiefdomName').empty();
+                var chiefdom = response.results.find(d => d.location === chiefdomCode);
+                document.getElementById('ChiefdomName').value = chiefdom.name;
+            }
+        });
+        $("#sateliteSpinner").addClass('d-none');
+    }
+
+    // Function to handle province change event
+    async function provinceChangeListener() {
+        $('#DistrictCode').empty();
+        $("#districtSpinner").removeClass('d-none');
+
+        var provinceValue = document.getElementById("ProvinceCode").value;
+        await makeGetRequest(baseUrl + `getDistricts?provinceCode=${provinceValue}`).then(async response => {
+            if (response && response.results) {
+                response.results.forEach(dataList => {
+                    $('#DistrictCode').append($('<option>', {
+                        value: dataList.location.trim(),
+                        text: dataList.name.trim(),
+                    }));
+                });
+
+                var districtCode = document.getElementById('DistrictCode').value;
+                $('#DistrictName').empty();
+                var district = response.results.find(d => d.location === districtCode);
+                document.getElementById('DistrictName').value = district.name;
+                await districtChangeListener();
+            }
+        });
+        $("#districtSpinner").addClass('d-none');
+    }
+
+    
+    // Function to submit form data
+    async function submitForm() {
+        $("#btnSpinner").removeClass('d-none');
+        $("#btnIcon").addClass('d-none');
+        var formData = $('#formData').serializeArray().reduce(function (obj, item) {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+        formData.verifies = false;
+
+        var formArray = [formData];
+        var formArrayObject = {
+            results: formArray
+        }
+
+    }
+
+</script>

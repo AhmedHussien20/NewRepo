@@ -1,0 +1,364 @@
+﻿@page
+@model Crop_Management_System.Pages.Crops.IndexModel
+@{
+}
+
+<div>
+    <h4 class="mt-4">Crops</h4>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item active"><a href='@Url.Action("Index","Home")' class="ml-1 mr-1">Dashboard</a> / Crops</li>
+    </ol>
+
+    @*<div class="mt-4">
+            <button class="btn btn-primary w-100" data-toggle="modal" data-target="#modal">Add Crops</button>
+        </div>*@
+
+    <!-- database table -->
+    <div class="mt-4 card mb-4">
+        <div class="card-header align-items-center d-flex justify-content-between">
+            <div>
+                <i class="fas fa-table mr-1"></i>
+                Current Crops
+            </div>
+            <div>
+                <button class="btn btn-outline-info" onclick="resetButtons('Crop')" data-toggle="modal" data-target="#modal">Add Crops</button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>FMTITEMNO</th>
+                            <th>ItemNo</th>
+                            <th>Title</th>
+                            <th>StockUnit</th>
+                            <th>Category</th>
+                            <th>Cost</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableData" class=""></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4 card mb-4">
+        <div class="card-header align-items-center d-flex justify-content-between">
+            <div>
+                <i class="fas fa-table mr-1"></i>
+                Current Crop Categories
+            </div>
+            <div>
+                <button class="btn btn-outline-info" data-toggle="modal" data-target="#Categoriesmodal">Add Category</button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable2" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>title</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableData2" class=" "></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Crop Modal *@
+<div id="modal" class="modal fade ModelDialog" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <iframe name="dFrame" id="dummyframe" style="display: none;"></iframe>
+            <form id="formData" target="dFrame" enctype="multipart/form-data">
+                <input type="hidden" name="id" value="0" />
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Crop Modal</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group" contenteditable="true">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label class="font-weight-bold">fmtitemno</label>
+                                <input type="text" class="form-control" name="fmtitemno" required autocomplete="off">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="font-weight-bold">itemNo</label>
+                                <input type="text" class="form-control" name="itemNo" required autocomplete="off">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="font-weight-bold">stockUnit</label>
+                                <input type="text" class="form-control" name="stockUnit" required autocomplete="off">
+                            </div>
+                        </div>
+                        <hr />
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <label class="font-weight-bold">Title</label>
+                                <input type="text" class="form-control" name="title" required autocomplete="off">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="font-weight-bold">
+                                    Crop Category
+                                    <i class="icofont-dotted-down"></i>
+                                </label>
+                                <select class="form-control" name="cropCategoryId" id="cropCategoryId" required>  </select>
+                            </div>
+                        </div>
+                        <hr />
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <label class="font-weight-bold">Cost <small>(ZMK)</small></label>
+                                <input type="number" class="form-control" name="price" id="price" min="10" max="10000" value="10" required>
+                            </div>
+                            <label class="font-weight-bold d-none">Description</label>
+                            <textarea class="form-control d-none" rows="3" name="description" id="description" required>212</textarea>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="btnCreateCrop" type="button" class="btn btn-primary" onclick="categoriesHandler(false)">
+                        <span id="btnSpinner" class="d-none spinner-border  spinner-grow-sm" role="status" aria-hidden="true"></span>
+                        Save changes
+                    </button>
+                    <button id="btnUpdateCrop" type="button" class="btn btn-warning d-none" onclick="categoriesHandler(true)">
+                        <span id="btnSpinnerUpdate" class="d-none spinner-border  spinner-grow-sm" role="status" aria-hidden="true"></span>
+                        Update
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@* Categories Modal *@
+<div id="Categoriesmodal" class="modal fade ModelDialog" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <iframe name="dFrame" id="dummyframe" style="display: none;"></iframe>
+            <form id="formData2" target="dFrame" enctype="multipart/form-data">
+                <input type="hidden" name="id" />
+                <input type="hidden" name="dbOperations" value="Create" />
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Crop Categories Modal</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="font-weight-bold">Title</label>
+                        <input type="text" class="form-control" name="categoriesTitle" required autocomplete="off">
+                        <label class="font-weight-bold">Description</label>
+                        <input type="text" class="form-control" name="categoriesDescription" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="btnCreateCrop" type="button" class="btn btn-primary" onclick="categoriesHandler2(false)">
+                        <span id="btnSpinner" class="d-none spinner-border  spinner-grow-sm" role="status" aria-hidden="true"></span>
+                        Save changes
+                    </button>
+                    <button id="btnUpdateCrop" type="button" class="btn btn-warning d-none" onclick="categoriesHandler2(true)">
+                        <span id="btnSpinnerUpdate" class="d-none spinner-border  spinner-grow-sm" role="status" aria-hidden="true"></span>
+                        Update
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var url;
+
+    $(document).ready(async function () {
+        await getData();
+        displayMainBody();
+    });
+
+    async function getData() {
+        $('#dataTable').DataTable({ "bDestroy": true }).clear();
+        $('#dataTable2').DataTable({ "bDestroy": true }).clear();
+
+        await makeGetRequest(baseUrl + `getAllCropCategory`).then(async response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#dataTable2').DataTable({
+                        "order": [[0, "desc"]],
+                        "bDestroy": true
+                    }).row.add([
+                        dataList.id,
+                        dataList.title,
+                        `<div class="d-flex justify-content-around">
+                            <button class="btn bg-transparent text-info" onclick="editModel('${i}','Category')">Edit</button>
+                            <button class="btn bg-transparent text-danger" onclick="deleteFunction('${dataList.id}')">Remove</button>
+                        </div>`,
+                    ]).draw();
+
+                    $('#cropCategoryId').append($('<option>', {
+                        value: dataList.id,
+                        text: dataList.title,
+                    }));
+                }
+            }
+        });
+
+        await makeGetRequest(baseUrl + "getAllCrops").then(response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#dataTable').DataTable({
+                        "order": [[0, "desc"]],
+                        "bDestroy": true
+                    }).row.add([
+                        dataList.id,
+                        dataList.fmtitemno,
+                        dataList.itemNo,
+                        dataList.title,
+                        dataList.stockUnit,
+                        dataList.cropCategory.title,
+                        converToMoneyFormat(dataList.price),
+                        `<div class="d-flex justify-content-around">
+                            <button class="btn bg-transparent text-info" onclick="editModel('${i}','Crop')">Edit</button>
+                            <button class="btn bg-transparent text-danger" onclick="deleteFunction('${dataList.id}')">Remove</button>
+                        </div>`,
+                    ]).draw();
+                }
+            }
+        });
+    }
+
+    function editModel(index, src) {
+        $(`#btnUpdate${src}`).removeClass('d-none');
+        $(`#btnCreate${src}`).addClass('d-none');
+
+        switch (src) {
+            case "Crop":
+                var table = $('#dataTable').DataTable();
+
+                //get data
+                var id = table.row(index).data()[0];
+                var fmtitemno = table.row(index).data()[1];
+                var itemNo = table.row(index).data()[2];
+                var title = table.row(index).data()[3];
+                var stockUnit = table.row(index).data()[4];
+                var Category = table.row(index).data()[5];
+                var Cost = table.row(index).data()[6];
+
+                //add data
+                $('input[name=fmtitemno]').val(fmtitemno);
+                $('input[name=itemNo]').val(itemNo);
+                $('input[name=stockUnit]').val(stockUnit);
+                $('input[name=id]').val(id);
+                $('input[name=title]').val(title);
+                //$('#description').val(Description);
+                $('#cost').val(Cost);
+                getSelectValue("cropCategoryId", Category);
+
+                //display model
+                $('#modal').modal('show');
+        }
+    }
+
+    async function categoriesHandler(update) {
+        var url = "createCrops";
+        var spinnerClass = "#btnSpinner";
+        if (update) {
+            url = "updateCrops";
+            spinnerClass = "#btnSpinnerUpdate"
+        }
+
+        $(spinnerClass).removeClass('d-none');
+        var formData = $('#formData').serializeArray().reduce(function (obj, item) {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+        console.log(formData);
+
+        await makePostRequest(formData, baseUrl + url).then(async response => {
+            console.log(response);
+            if (response.error) {
+                alertify.error('Unsuccessful - ' + response.errorMessage);
+                console.log(response.errorMessage);
+            } else {
+                alertify.success("Crop Updated");
+                $('#modal').modal('hide');
+                await getData();
+            }
+        });
+
+        //update record in table
+        $(spinnerClass).addClass('d-none');
+    }
+
+    async function categoriesHandler2(update) {
+        $("#btnSpinner").removeClass('d-none');
+        var formData = $('#formData2').serializeArray().reduce(function (obj, item) {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+        console.log(formData);
+        await simulateAsycCall();
+
+        //update record in table
+        var table = $('#dataTable2').DataTable();
+        table.row(formData.id).data([
+            "Tiger Nixon",
+            "System Architect",
+            "$3,120",
+            "2011/04/25",
+            "Edinburgh",
+        ]).draw();
+
+        $("#btnSpinner").addClass('d-none');
+        $('#Categoriesmodal').modal('hide');
+        alertify.success("Record Updated");
+    }
+
+    async function deleteFunction(id) {
+        var confirmText = "Are you sure you want to delete this device?";
+        if (confirm(confirmText)) {
+            await makeGetRequest(baseUrl + `deleteCrops?id=${id}`).then(async response => {
+                if (response != null) {
+                    console.log(response);
+                    if (response.error) {
+                        alertify.error("Failed to Delete Crops");
+                    } else {
+                        alertify.success("Crops Successfuly Deleted");
+                        $('#dataTable').DataTable({ "bDestroy": true }).clear();
+                        await getData();
+                    }
+
+                }
+            });
+        }
+    }
+
+    function resetButtons(src) {
+        var elements = document.getElementsByTagName("input");
+        for (var ii = 0; ii < elements.length; ii++) {
+            if (elements[ii].type == "text") {
+                elements[ii].value = "";
+            }
+        }
+        $(`#btnCreate${src}`).removeClass('d-none');
+        $(`#btnUpdate${src}`).addClass('d-none');
+    }
+</script>
+
+

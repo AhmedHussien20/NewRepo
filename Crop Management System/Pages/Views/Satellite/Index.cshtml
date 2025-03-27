@@ -1,0 +1,493 @@
+﻿@page
+@model Crop_Management_System.Pages.Satellite.IndexModel
+@{
+}
+
+<div>
+    <h4 class="mt-4">Locations</h4>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item active"><a href='@Url.Action("Index","Home")' class="ml-1 mr-1">Dashboard</a> / Locations</li>
+    </ol>
+
+    <!-- database table -->
+    <div class="mt-4 card mb-4">
+        <div class="card-header align-items-center d-flex justify-content-between">
+            <div>
+                <i class="fas fa-table mr-1"></i>
+                Current Provinces
+            </div>
+            <div>
+                <button class="btn btn-outline-info" onclick="resetButtons('Province')" data-toggle="modal" data-target="#provinceModal">Add Province</button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="provinceTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Prefix</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="" class=" "></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4 card mb-4">
+        <div class="card-header align-items-center d-flex justify-content-between">
+            <div>
+                <i class="fas fa-table mr-1"></i>
+                Current Districts
+            </div>
+            <div>
+                <button class="btn btn-outline-info" onclick="resetButtons('District')" data-toggle="modal" data-target="#districtModal">Add District</button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="districtTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Prefix</th>
+                            <th>Province</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="" class=""></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4 card mb-4">
+        <div class="card-header align-items-center d-flex justify-content-between">
+            <div>
+                <i class="fas fa-table mr-1"></i>
+                Current Satellites
+            </div>
+            <div>
+                <button class="btn btn-outline-info" onclick="resetButtons('Satelite')" data-toggle="modal" data-target="#sateliteModal">Add Satelite</button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="sateliteTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Prefix</th>
+                            <th>District</th>
+                            <th>Province</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="" class=""></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Province Modal *@
+<div id="provinceModal" class="modal fade ModelDialog" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <iframe name="dFrame" id="dummyframe" style="display: none;"></iframe>
+            <form id="formData" target="dFrame"  enctype="multipart/form-data">
+                <input type="hidden" name="id" value="0" />
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Province Modal</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group" contenteditable="true">
+                        <label class="font-weight-bold">Title</label>
+                        <input type="text" class="form-control" name="title" required autocomplete="off">
+                        <label class="font-weight-bold">Prefix</label>
+                        <input type="text" class="form-control" name="prefix" required autocomplete="off"> 
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="btnCreateProvince" type="button" class="btn btn-primary" onclick="provinceModalForm(false)">
+                        <span id="btnSpinnerProvince" class="d-none spinner-border  spinner-grow-sm" role="status" aria-hidden="true"></span>
+                        Save changes
+                    </button>
+                    <button id="btnUpdateProvince" type="button" class="btn btn-warning d-none" onclick="provinceModalForm(true)">
+                        <span id="btnSpinnerProvinceUpdate" class="d-none spinner-border  spinner-grow-sm" role="status" aria-hidden="true"></span>
+                        Update
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@* District Modal *@
+<div id="districtModal" class="modal fade ModelDialog" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <iframe name="dFrame" id="dummyframe" style="display: none;"></iframe>
+            <form id="DistrictformData" target="dFrame" enctype="multipart/form-data">
+                <input type="hidden" name="id" value="0" />
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">District Modal</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group" contenteditable="true">
+                        <label class="font-weight-bold">Title</label>
+                        <input type="text" class="form-control" name="title" required autocomplete="off">
+                        <label class="font-weight-bold">Prefix</label>
+                        <input type="text" class="form-control" name="prefix" required autocomplete="off">
+                        <label class="font-weight-bold">Province <i class="icofont-dotted-down"></i></label>
+                        <select class="form-control " name="provinceId" id="provinceId"> 
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="btnCreateDistrict" type="button" class="btn btn-primary" onclick="districtModalForm(false)">
+                        <span id="btnSpinnerDistrict" class="d-none spinner-border  spinner-grow-sm" role="status" aria-hidden="true"></span>
+                        Save changes
+                    </button>
+                    <button id="btnUpdateDistrict" type="button" class="btn btn-warning d-none" onclick="districtModalForm(true)">
+                        <span id="btnSpinnerDistrictUpdate" class="d-none spinner-border  spinner-grow-sm" role="status" aria-hidden="true"></span>
+                        Update
+                    </button> 
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@* Satelite Modal *@
+<div id="sateliteModal" class="modal fade ModelDialog" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <iframe name="dFrame" id="dummyframe" style="display: none;"></iframe>
+            <form id="SateliteformData" target="dFrame" enctype="multipart/form-data">
+                <input type="hidden" name="id" value="0" />
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Satellites Modal</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group" contenteditable="true">
+                        <label class="font-weight-bold">Title</label>
+                        <input type="text" class="form-control" name="title" required autocomplete="off">
+                        <label class="font-weight-bold">Prefix</label>
+                        <input type="text" class="form-control" name="prefix" required autocomplete="off">
+                        <label class="font-weight-bold">District <i class="icofont-dotted-down"></i></label>
+                        <select class="form-control " name="districtId" id="districtId"  >
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="btnCreateSatelite" type="button" class="btn btn-primary" onclick="sateliteModalForm(false)">
+                        <span id="btnSpinnerDistrict" class="d-none spinner-border  spinner-grow-sm" role="status" aria-hidden="true"></span>
+                        Save changes
+                    </button>
+                    <button id="btnUpdateSatelite" type="button" class="btn btn-warning d-none" onclick="sateliteModalForm(true)">
+                        <span id="btnSpinnerDistrictUpdate" class="d-none spinner-border  spinner-grow-sm" role="status" aria-hidden="true"></span>
+                        Update
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    var url;
+
+    $(document).ready(async function () { 
+        await getData();  
+        displayMainBody();
+    });
+
+    async function getData() {
+        clearDataTables();
+        await makeGetRequest(baseUrl + `getAllProvince`).then(response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#provinceTable').DataTable({
+                        "order": [[0, "desc"]],
+                        "bDestroy": true
+                    }).row.add([
+                        dataList.id,
+                        dataList.title,
+                        dataList.prefix, 
+                        `<div class="d-flex justify-content-around">
+                            <button class="btn bg-transparent text-info" onclick="editModel('${i}','Province')">Edit</button>
+                            <button class="btn bg-transparent text-danger" onclick="deleteFunction('${dataList.id}','Province')">Remove</button>
+                        </div>`,
+                    ]).draw();
+
+                    //province list
+                    $('#provinceId').append($('<option>', {
+                        value: dataList.id,
+                        text: dataList.title,
+                    }));
+                }
+            }
+        });
+        await makeGetRequest(baseUrl + `getAllDistrict`).then(response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#districtTable').DataTable({
+                        "order": [[0, "desc"]],
+                        "bDestroy": true
+                    }).row.add([
+                        dataList.id,
+                        dataList.title,
+                        dataList.prefix,
+                        dataList.provinceData.title + ' - ' + dataList.provinceData.prefix,
+                        `<div class="d-flex justify-content-around">
+                            <button class="btn bg-transparent text-info" onclick="editModel('${i}','District')">Edit</button>
+                            <button class="btn bg-transparent text-danger" onclick="deleteFunction('${dataList.id}','District')">Remove</button>
+                        </div>`,
+                    ]).draw();
+
+                    //district list
+                    $('#districtId').append($('<option>', {
+                        value: dataList.id,
+                        text: dataList.title,
+                    }));
+                }
+            }
+        });
+        await makeGetRequest(baseUrl + `getAllSatelite`).then(response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    $('#sateliteTable').DataTable({
+                        "order": [[0, "desc"]],
+                        "bDestroy": true
+                    }).row.add([
+                        dataList.id,
+                        dataList.title,
+                        dataList.prefix,
+                        dataList.districtData.title + ' - ' + dataList.districtData.prefix,
+                        dataList.districtData.provinceData.title + ' - ' + dataList.districtData.provinceData.prefix,
+                        `<div class="d-flex justify-content-around">
+                            <button class="btn bg-transparent text-info" onclick="editModel('${i}','Satelite')">Edit</button>
+                            <button class="btn bg-transparent text-danger" onclick="deleteFunction('${dataList.id}','Satelite')">Remove</button>
+                        </div>`,
+                    ]).draw();
+                }
+            }
+        });
+
+    }
+
+    async function provinceModalForm(update) {
+        var url = "createProvince";
+        var spinnerClass = "#btnSpinnerProvince"; 
+        if (update) {
+            url = "updateProvince";
+            spinnerClass = "#btnSpinnerProvinceUpdate"
+        } 
+
+        $(spinnerClass).removeClass('d-none');
+        var formData = $('#formData').serializeArray().reduce(function (obj, item) {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+        console.log(formData); 
+
+        await makePostRequest(formData, baseUrl + url).then(async response => {
+            console.log(response);
+            if (response.error) {
+                alertify.error('Unsuccessful - ' + response.errorMessage);
+                console.log(response.errorMessage);
+            } else { 
+                await getData();
+                alertify.success("Created!");
+            }
+        });
+
+        $(spinnerClass).addClass('d-none');
+        $('#provinceModal').modal('hide');
+    }
+
+    async function districtModalForm(update) {
+        var url = "createDistrict";
+        var spinnerClass = "#btnSpinnerDistrict";
+        if (update) {
+            url = "updateDistrict";
+            spinnerClass = "#btnSpinnerDistrictUpdate"
+        }
+
+        $(spinnerClass).removeClass('d-none');
+        var formData = $('#DistrictformData').serializeArray().reduce(function (obj, item) {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+        console.log(formData);
+
+        await makePostRequest(formData, baseUrl + url).then(async response => {
+            console.log(response);
+            if (response.error) {
+                alertify.error('Unsuccessful - ' + response.errorMessage);
+                console.log(response.errorMessage);
+            } else {
+                await getData();
+                alertify.success("Created!");
+            }
+        });
+
+        $(spinnerClass).addClass('d-none');
+        $('#districtModal').modal('hide');
+    }
+
+    async function sateliteModalForm(update) {
+        var url = "createSatelite";
+        var spinnerClass = "#btnSpinnerSatelite";
+        if (update) {
+            url = "updateSatelite";
+            spinnerClass = "#btnSpinnerSateliteUpdate"
+        }
+
+        $(spinnerClass).removeClass('d-none'); 
+        var formData = $('#SateliteformData').serializeArray().reduce(function (obj, item) {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+        console.log(formData);
+
+
+        await makePostRequest(formData, baseUrl + url).then(async response => {
+            console.log(response);
+            if (response.error) {
+                alertify.error('Unsuccessful - ' + response.errorMessage);
+                console.log(response.errorMessage);
+            } else {
+                await getData();
+                alertify.success("Created!");
+            }
+        });
+
+        $(spinnerClass).addClass('d-none');
+        $('#sateliteModal').modal('hide');
+    }
+
+    //
+    function editModel(index, src) {
+        $(`#btnUpdate${src}`).removeClass('d-none');
+        $(`#btnCreate${src}`).addClass('d-none');
+
+        switch (src) {
+            case "Province":
+                var table = $('#provinceTable').DataTable();
+
+                //get data
+                var id = table.row(index).data()[0];
+                var title = table.row(index).data()[1];
+                var prefix = table.row(index).data()[2];
+
+                //add data
+                $('input[name=id]').val(id);
+                $('input[name=title]').val(title);
+                $('input[name=prefix]').val(prefix);
+
+                //display model
+                $('#provinceModal').modal('show');
+                break;
+            case "Satelite":
+                var table = $('#sateliteTable').DataTable();
+
+                //get data
+                var id = table.row(index).data()[0];
+                var title = table.row(index).data()[1];
+                var prefix = table.row(index).data()[2];
+                var districtId = table.row(index).data()[3];
+
+                //add data
+                $('input[name=id]').val(id);
+                $('input[name=title]').val(title);
+                $('input[name=prefix]').val(prefix);
+
+                var data = districtId.split("-");
+                getSelectValue("districtId", data[0].trim());
+
+                //display model
+                $('#sateliteModal').modal('show');
+                break;
+            case "District": 
+                var table = $('#districtTable').DataTable();
+
+                //get data
+                var id = table.row(index).data()[0];
+                var title = table.row(index).data()[1];
+                var prefix = table.row(index).data()[2];
+                var provinceId = table.row(index).data()[3];
+
+                //add data
+                $('input[name=id]').val(id);
+                $('input[name=title]').val(title);
+                $('input[name=prefix]').val(prefix);
+               
+                var provinceData = provinceId.split("-");
+                getSelectValue("provinceId", provinceData[0].trim());
+
+                //display model
+                $('#districtModal').modal('show');
+                break;
+        }
+    }
+
+    function clearDataTables() {
+        $('#provinceId').empty();
+        $('#districtId').empty();
+        $('#provinceTable').DataTable({ "bDestroy": true }).clear();
+        $('#districtTable').DataTable({ "bDestroy": true }).clear();
+        $('#sateliteTable').DataTable({ "bDestroy": true }).clear();
+    }
+
+    function resetButtons(src) {
+        var elements = document.getElementsByTagName("input");
+        for (var ii = 0; ii < elements.length; ii++) {
+            if (elements[ii].type == "text") {
+                elements[ii].value = "";
+            }
+        }
+        $(`#btnCreate${src}`).removeClass('d-none');
+        $(`#btnUpdate${src}`).addClass('d-none');
+    }
+
+    async function deleteFunction(id, src) {
+        var confirmText = "Are you sure you want to delete this location?";
+        if (confirm(confirmText)) {
+            await makeGetRequest(baseUrl + `delete${src}?id=${id}`).then(async response => {
+                if (response != null) {
+                    console.log(response);
+                    if (response.error) {
+                        alertify.error("Failed to Delete");
+                    } else {
+                        alertify.success("Device Successfuly");
+                        await getData();
+                    }
+                }
+            });
+        }
+    }
+</script>
+
+

@@ -68,8 +68,8 @@ namespace CMS_API.Controllers
 
                 // Create the new device
                 model.DeviceStatusId = 4;
-                deviceData.CreatedBy = model.Username;
-                deviceData.Username = model.Username;
+                //deviceData.CreatedBy = model.Username;
+                //deviceData.Username = model.Username;
                 await _db.DevicesCreate(model);
 
                 // Retrieve and return the newly created device

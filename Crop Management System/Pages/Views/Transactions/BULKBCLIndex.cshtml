@@ -4,9 +4,9 @@
 }
 
 <div>
-    <h4 class="mt-4">Transactions</h4>
+    <h4 class="mt-4">Pending Transactions</h4>
     <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item active"><a href='@Url.Action("Index","Home")' class="ml-1 mr-1">Dashboard</a> / Transactions</li>
+        <li class="breadcrumb-item active"><a href='@Url.Action("Index","Home")' class="ml-1 mr-1">Dashboard</a> / BCL Transactions</li>
     </ol>
 
     <!-- colored cards stats -->
@@ -22,7 +22,7 @@
         </div>
         <div class="col-xl-3 col-md-6">
             <div class="card bg-warning text-white mb-4">
-                <div class="card-body">
+                <div class="card-body">g
                     <h4>Pending Transactions</h4>
                     <span class="font-weight-bold" id="pendingTrans">00<br>
                 </div>
@@ -101,25 +101,6 @@
         </div>
     </div>
 
-    <!-- Status Filter-->
-    <!-- Status Filter -->
-    <div class="mb-4">
-        <div id="statusFilter" class="border border-info rounded p-3">
-            <div class="row">
-                <div class="col-md-12">
-                    <label class="font-weight-bold">Status <i class="icofont-dotted-down"></i></label>
-                    <select class="form-control" id="statusFilterSelect" onchange="statusFilterChanged()">
-                        <option value="">-- All --</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Approved">Approved</option>
-                        <option value="Retract">Retract</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
     @* Date Filter *@
     <div class="mb-4">
         <div id="dateFilter" class="collapse border border-info rounded p-3">
@@ -144,7 +125,6 @@
     </div>
 
     <!-- database table -->
-
     <div class="card mb-4">
         <div class="card-header">
             <i class="fas fa-table mr-1"></i>
@@ -156,15 +136,13 @@
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                     <thead class="text-center">
                         <tr>
-                            <th></th>
-                            <th>PRCN</th>
+                            <th>BCL</th>
                             <th>Farmer Details</th>
                             <th>Items </th>
                             <th>Order Details</th>
                             <th>Location</th>
                             <th>Verifier</th>
                             <th>Status</th>
-                            <th>Date Uploaded</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -181,9 +159,6 @@
             <iframe name="dFrame" id="dummyframe" style="display: none;"></iframe>
             <form id="formData" target="dFrame" onsubmit="editForm()" enctype="multipart/form-data">
                 <input type="hidden" name="sTranNo" />
-                <input type="hidden" name="multiUpdateStatus" />
-                <input type="hidden" name="updatedIds" />
-                
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Transaction Modal</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -223,8 +198,9 @@
         $('#startDate').val(getDateValue(today));
         $('#endDate').val(getDateValue(today));
         initializeDatatable();
+        await getProvinceData();
         //await getData(false, false, false, getDateValue(today), getDateValue(today), null);
-        await getStats();
+        //await getStats();
         displayMainBody();
     });
 
@@ -255,24 +231,7 @@
 
     }
 
-    async function statusFilterChanged() {
-        const status = document.getElementById("statusFilterSelect").value;
-        const startDate = $('#startDate').val();
-        const endDate = $('#endDate').val();
-        const sateliteValue = document.getElementById("sateliteId").value; 
-
-        const isDateFilterExpanded = document.getElementById("dateFilter").classList.contains("show");
-        const filterLocation = !!sateliteValue;
-        const filterDate = isDateFilterExpanded && !!startDate && !!endDate;
-        const shouldfilter = filterLocation || filterDate;
-
-        startIndex = 0;
-        responseList = [];
-        dataTable.clear().draw();
-        await getData(shouldfilter, filterDate, filterLocation, startDate, endDate, sateliteValue, status);
-    }
-
-    async function getData(shouldFilter, dateFilter, locationFilter, startDate, endDate, location, status) {
+    async function getData(shouldFilter, dateFilter, locationFilter, startDate, endDate, location) {
         $("#tableSpinner").removeClass('d-none');
         // $('#dataTable').DataTable({ "bDestroy": true }).clear();
         var formData = {
@@ -283,19 +242,19 @@
             "locationFilter": locationFilter,
             "location": location,
             "startIndex": startIndex,
-            "batchSize": batchSize,
-            "status" : status
+            "batchSize": batchSize
         };
 
         console.log(formData);
-        await makePostRequest(formData, baseUrl + "getAllPRCN").then(response => {
+        await makePostRequest(formData, baseUrl + "getAllBCLPending").then(response => {
+            console.log(response);
             if (response != null) {
                 for (i in response.results) {
                     var dataList = response.results[i];
                     responseList.push(dataList);
                     dataTable.row.add([
-                        `<input type="checkbox" data-id="${dataList.sTranNo}" ${dataList.status !== 'Pending' ? 'disabled' : '' }/>`,
-                        dataList.sTranNo,
+                        dataList.bclnumber,
+                      //  dataList.rcpno,
                         `<label class="small">Name: <br><b>${dataList.sVendorName}</b></label>
                          <label class="small">NRC: <br><b>${dataList.sVendorID}</b></label>`,
                         `<label class="small">Crop: <br><b>${dataList.sItemDescr}</b></label><br>`,
@@ -304,15 +263,13 @@
                          <label class="small">Total: <br><b>${checkIfValid(dataList.dDocTotal, dataList.retractedAmount, dataList.status)}</b></label>`,
                         `<label class="small">Province: <br><b>${dataList.province}</b></label><br>
                          <label class="small">District: <br><b>${dataList.district}</b></label><br>
-                         <label class="small">Satelite: <br><b>${dataList.satelite}</b></label>`,
-                        `<label class="small">Name: <br><b>${dataList.verifyUser}</b></label><br>
-                         <label class="small">Date Verified: <br><b>${convertTimeStampToDate(dataList.dateverify)}</b></label>`,
-                        highlightStatus(dataList.status, i),
+                         <label class="small">Satelite: <br><b>${dataList.satelite}</b></label>
+                         <label class="small">Description: <br><b>${dataList.status}</b></label><br>
+                         `,
+                        highlightStatus(dataList.bclStatus, i),
                         dataList.dtDateTime,
                         `<div class="d-flex justify-content-between">
-                            ${dataList.status != 'Pending' ?
-                            `<button class="btn bg-transparent text-success" disabled>Change Status</button>` :
-                            `<button class="btn bg-transparent text-success" onclick="editModel('${dataList.sTranNo}', '${dataList.status}')">Change Status</button>`}
+                                ${`<button class="btn bg-transparent text-success" onclick="postModel('${dataList.bclnumber}', '${dataList.bclStatus}')">Post BCL</button>`}
                         </div>`,
                     ]);
                 }
@@ -334,23 +291,9 @@
         if (event.target.checked) {
             console.log(`Checkbox in row ${row.rowIndex} is checked.`);
             console.log(row.cells[1].innerText);
-
-		} else {
+        } else {
             console.log(`Checkbox in row ${row.rowIndex} is unchecked.`);
-           
         }
-        const selected = document.querySelectorAll('#dataTable input[type="checkbox"]:checked');
-        const btn = document.getElementById("btnVerifySelected");
-        if(btn){
-            if(selected.length > 0){
-                btn.removeAttribute("disabled");
-            }else{
-                btn.setAttribute("disabled",true);
-            }
-        }
-            
-                
-
     }
     window.addEventListener("scroll", async function () {
         var windowHeight = window.innerHeight;
@@ -383,81 +326,73 @@
         $('#modal').modal('show');
     }*/
 
-       function editModel(sTranNo, status, isMulti = false) {
-        const table = $('#dataTable').DataTable();
-        console.log('str',sTranNo);
-        console.log('isMulti',isMulti);
-           if (isMulti) {
-        $('input[name=sTranNo]').val(''); // clear single ID
-        $('input[name=multiUpdateStatus]').val(true); // set value instead of .data
-        $('input[name=updatedIds]').val(sTranNo); // comma-separated IDs
-        getSelectValue("status", status);
-    } else {
-        $('input[name=sTranNo]').val(sTranNo);
-        $('input[name=multiUpdateStatus]').val(false); // set value
-        $('input[name=updatedIds]').val('');
-        getSelectValue("status", status);
-    }
-
-        $('#modal').modal('show');
-    }
-
-
-    async function editForm() {
-        $("#btnSpinner").removeClass('d-none');
-        debugger
-        const sTranNo = $('input[name="sTranNo"]').val(); // may be one or multiple IDs
-        const updatedIds = $('input[name="updatedIds"]').val(); // may be one or multiple IDs
-        const multiUpdateStatus = $('input[name="multiUpdateStatus"]').val() === "true"; // may be one or multiple IDs
-        
-        const formData = {
-            id: sTranNo,                        // for single update
-            updatedIds: updatedIds,                // for multi update
-            Status: $('#status').val(),
-            multiUpdateStatus: multiUpdateStatus
-        };
-
-        console.log("Submitting:", formData);
-
-            await makePostRequest(formData, baseUrl + "updatePRCN").then(async response => {
-        if (response.error) {
-            alertify.error('Unsuccessful - ' + response.errorMessage);
-        } else {
-            alertify.success("Record Updated");
-
-            //  Refresh the table with current filters
-            const status = document.getElementById("statusFilterSelect").value;
-            const startDate = $('#startDate').val();
-            const endDate = $('#endDate').val();
-            const sateliteValue = document.getElementById("sateliteId").value;
-
-            startIndex = 0;
-            responseList = [];
-            dataTable.clear().draw();
-            await getData(true, true, !!sateliteValue, startDate, endDate, sateliteValue, status);
+    async function postModel(bclnumber, status) {
+        var table = $('#dataTable').DataTable();
+        var Id = bclnumber;
+        var Status = status;
+        console.log(Status);
+        console.log(Id);
+        var data = {
+            "sTranNo": Id,
+            "status": Status
         }
-    });
-
+        await makePostRequest(data, baseUrl + "postBCLBulk").then(response => {
+            if (response != null) {
+                for (i in response.results) {
+                    var dataList = response.results[i];
+                    console.log(dataList);
+                    if (response.error) {
+                        alertify.error('Unsuccessful - ' + response.errorMessage);
+                        console.log(response.errorMessage);
+                    } else {
+                        //$('#dataTable').DataTable({ "bDestroy": true }).clear();
+                        //await getData();
+                        //await getStats();
+                        alertify.success("Record Posted Successfully");
+                    }
+                }
+            }
+        });
         $("#btnSpinner").addClass('d-none');
         $('#modal').modal('hide');
     }
 
+    async function editForm() {
+        $("#btnSpinner").removeClass('d-none');
+        var formData = $('#formData').serializeArray().reduce(function (obj, item) {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+        console.log(formData);
+
+        await makePostRequest(formData, baseUrl + "updatePRCN").then(async response => {
+            console.log(response);
+            if (response.error) {
+                alertify.error('Unsuccessful - ' + response.errorMessage);
+                console.log(response.errorMessage);
+            } else {
+                //$('#dataTable').DataTable({ "bDestroy": true }).clear();
+                //await getData();
+                //await getStats();
+                alertify.success("Record Posted Successfully");
+            }
+        });
+
+        $("#btnSpinner").addClass('d-none');
+        $('#modal').modal('hide');
+
+    }
 
     //date Filter
     async function dateFilter() {
         var startDate = $('#startDate').val();
         var endDate = $('#endDate').val();
-        var sateliteValue = document.getElementById("sateliteId").value;
-        var filterLocation = true;
-        if (sateliteValue == null || sateliteValue == '') {
-            filterLocation = false;
-        }
         //$('#dataTable').DataTable({ "bDestroy": true }).clear();
         startIndex = 0;
         responseList = [];
         dataTable.clear().draw();
-        filterDate = true;
-        await getData(true, filterDate, filterLocation, startDate, endDate, null);
+        await getProvinceData();
+        //await getData(true, true, false, startDate, endDate, null);
     }
 
     async function getProvinceData() {
@@ -556,34 +491,28 @@
     }
 
     async function sateliteChangeListener() {
-         
         $("#deviceSpinner").removeClass('d-none');
         //$('#dataTable').DataTable({ "bDestroy": true }).clear();
         responseList = [];
 
         var sateliteValue = document.getElementById("sateliteId").value;
-        const status = document.getElementById("statusFilterSelect").value;
-
         startIndex = 0;
         dataTable.clear().draw();
         initializeDatatable();
-        filterDate= false;
-        await getData(true, filterDate, true, getDateValue(today), getDateValue(today), sateliteValue, status);
+        await getData(true, false, true, getDateValue(today), getDateValue(today), sateliteValue);
         $("#deviceSpinner").addClass('d-none');
     }
     //end of date filter
 
     function highlightStatus(val, index) {
-        if (val == 'Pending') {
-            return `<i class="text-warning" id='status_${index}'>${val}</i>`
-        } else if (val == 'Approved') {
-            return `<i class="text-success" id='status_${index}'>${val}</i>`
-        } else if (val == 'Posted') {
-            return `<i class="text-secondary" id='status_${index}'>${val}</i>`
-        } else if (val == 'Retract') {
-            return `<i class="text-danger" id='status_${index}'>${val}</i>`
+        if (val == 0) {
+            return `<i class="text-warning" id='status_${index}'>Pending</i>`;
+        } else if (val == 1) {
+            return `<i class="text-success" id='status_${index}'>Posted</i>`;
+        } else if (val == -1) {
+            return `<i class="text-secondary" id='status_${index}'>Failed</i>`;
         } else {
-            return `<i class="text-info" id='status_${index}'>${val}</i>`
+            return `<i class="text-info" id='status_${index}'>${val}</i>`;
         }
     }
 
@@ -596,39 +525,11 @@
             return ` <p class="text-success">${converToMoneyFormat(val)}</p>`;
         }
     }
-      
 
     function initializeDatatable() {
         dataTable = $('#dataTable').DataTable({
             dom: 'Bfrti',
             buttons: [
-                    {
-        text: 'Verify Selected',
-        attr: { id: 'btnVerifySelected', disabled: true },
-        action: async function () {
-            const selectedCheckboxes = document.querySelectorAll('#dataTable input[type="checkbox"]:checked');
-
-            if (selectedCheckboxes.length === 0) {
-                alertify.error("Please select at least one record.");
-                return;
-            }
-
-             const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.getAttribute('data-id')).join(',');
-             console.log(selectedIds);
-            // Open modal using multi-mode
-            editModel(selectedIds, 'Pending', true);
-            // Refresh the table
-            startIndex = 0;
-            responseList = [];
-            dataTable.clear().draw();
-            const sateliteValue = document.getElementById("sateliteId").value;
-            await getData(true, false, !!sateliteValue, $('#startDate').val(), $('#endDate').val(), sateliteValue, null);
-
-            // Disable the button again
-            document.getElementById('btnVerifySelected').setAttribute('disabled', true);
-        }
-    },
-
                 'copy', {
                     text: 'CSV', action: function (e, dt, node, config) {
                         // Define headers for the Excel file

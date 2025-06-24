@@ -1096,16 +1096,24 @@ namespace Infrustructure_Layer.DataAccess
 
         public async Task<int> FarmerCreate(FarmerModel model)
         {
+            // if (model.VerifiedString != null)
+            // {
+            //     if (model.Verified == "true")
+            //     {
+            //         model.Verified = true;
+            //     }
+            //     else
+            //     {
+            //         model.Verified = false;
+            //     }
+            // }
             if (model.VerifiedString != null)
             {
-                if (model.VerifiedString == "true")
-                {
-                    model.Verified = true;
-                }
-                else
-                {
-                    model.Verified = false;
-                }
+                model.Verified = DateTime.TryParse(model.VerifiedString, out _);
+            }
+            else
+            {
+                model.Verified = false;
             }
             int output = 0;
             output = await _db.SaveDataAsync(_sp.FarmerCreate,
@@ -1127,7 +1135,9 @@ namespace Infrustructure_Layer.DataAccess
                                                  AccountName = model.AccountName,
                                                  AccountNumber = model.AccountNumber,
                                                  ModifyBy = model.ModifyBy,
-                                                 ModifyOn = model.ModifyOn
+                                                 ModifyOn = model.ModifyOn,
+                                                 PaymentProviderId = model.PaymentProviderId,
+                                                 BankBranchId = model.BankBranchId
                                              },
                                              connectionStringName,
                                              true);
@@ -1136,16 +1146,24 @@ namespace Infrustructure_Layer.DataAccess
 
         public async Task<int> FarmerCreatev2(FarmerModel model)
         {
+            // if (model.VerifiedString != null)
+            // {
+            //     if (model.Verified == "true")
+            //     {
+            //         model.Verified = true;
+            //     }
+            //     else
+            //     {
+            //         model.Verified = false;
+            //     }
+            // }
             if (model.VerifiedString != null)
             {
-                if (model.VerifiedString == "true")
-                {
-                    model.Verified = true;
-                }
-                else
-                {
-                    model.Verified = false;
-                }
+                model.Verified = DateTime.TryParse(model.VerifiedString, out _);
+            }
+            else
+            {
+                model.Verified = false;
             }
             int output = 0;
             output = await _db.SaveDataAsync(_sp.FarmerCreatev2,
@@ -1178,16 +1196,24 @@ namespace Infrustructure_Layer.DataAccess
 
         public async Task<int> FarmerUpdate(FarmerModel model)
         {
+            // if (model.VerifiedString != null)
+            // {
+            //     if (model.Verified == "true")
+            //     {
+            //         model.Verified = true;
+            //     }
+            //     else
+            //     {
+            //         model.Verified = false;
+            //     }
+            // }
             if (model.VerifiedString != null)
             {
-                if (model.VerifiedString == "true")
-                {
-                    model.Verified = true;
-                }
-                else
-                {
-                    model.Verified = false;
-                }
+                model.Verified = DateTime.TryParse(model.VerifiedString, out _);
+            }
+            else
+            {
+                model.Verified = false;
             }
             int output = 0;
             output = await _db.SaveDataAsync(_sp.FarmerUpdate,
@@ -1219,16 +1245,24 @@ namespace Infrustructure_Layer.DataAccess
 
         public async Task<int> FarmerUpdatev2(FarmerModel model)
         {
+            // if (model.VerifiedString != null)
+            // {
+            //     if (model.Verified == "true")
+            //     {
+            //         model.Verified = true;
+            //     }
+            //     else
+            //     {
+            //         model.Verified = false;
+            //     }
+            // }
             if (model.VerifiedString != null)
             {
-                if (model.VerifiedString == "true")
-                {
-                    model.Verified = true;
-                }
-                else
-                {
-                    model.Verified = false;
-                }
+                model.Verified = DateTime.TryParse(model.VerifiedString, out _);
+            }
+            else
+            {
+                model.Verified = false;
             }
             int output = 0;
             output = await _db.SaveDataAsync(_sp.FarmerUpdatev2,
@@ -1314,16 +1348,34 @@ namespace Infrustructure_Layer.DataAccess
 
         public async Task<int> FarmerCommercialCreate(FarmerModel model)
         {
+            // if (model.VerifiedString != null)
+            // {
+            //     // if (model.VerifiedString == "true")
+            // {
+            //     model.Verified = true;
+            // }
+            // else
+            // {
+            //     model.Verified = false;
+            // }
+
+            // if (DateTime.TryParse(model.VerifiedString, out _))
+            //     {
+            //         model.Verified = true;
+            //     }
+            //     else
+            //     {
+            //         model.Verified = false;
+            //     }
+
+            //}
             if (model.VerifiedString != null)
             {
-                if (model.VerifiedString == "true")
-                {
-                    model.Verified = true;
-                }
-                else
-                {
-                    model.Verified = false;
-                }
+                model.Verified = DateTime.TryParse(model.VerifiedString, out _);
+            }
+            else
+            {
+                model.Verified = false;
             }
             int output = 0;
             output = await _db.SaveDataAsync(_sp.FarmerCommercialCreate,
@@ -1355,16 +1407,24 @@ namespace Infrustructure_Layer.DataAccess
 
         public async Task<int> FarmerCommercialUpdate(FarmerModel model)
         {
+            // if (model.VerifiedString != null)
+            // {
+            //     if (model.VerifiedString == "true")
+            //     {
+            //         model.Verified = true;
+            //     }
+            //     else
+            //     {
+            //         model.Verified = false;
+            //     }
+            // }
             if (model.VerifiedString != null)
             {
-                if (model.VerifiedString == "true")
-                {
-                    model.Verified = true;
-                }
-                else
-                {
-                    model.Verified = false;
-                }
+                model.Verified = DateTime.TryParse(model.VerifiedString, out _);
+            }
+            else
+            {
+                model.Verified = false;
             }
             int output = 0;
             output = await _db.SaveDataAsync(_sp.FarmerCommercialUpdate,
@@ -1708,6 +1768,34 @@ namespace Infrustructure_Layer.DataAccess
             return output.FirstOrDefault();
         }
 
+        public async Task<BulkBCLModel> BulkBCLGet(string Bclnumber)
+        {
+            var result = await _db.LoadDataAsync<TransactionModel, dynamic>(
+                _sp.BCLGetBulk,
+                new { bclnumber = Bclnumber },
+                connectionStringName,
+                true
+            );
+
+            if (result == null || !result.Any())
+                return null;
+
+            var first = result.First();
+
+            var bulk = new BulkBCLModel
+            {
+                sTranNo = first.sTranNo,
+                bclnumber = first.bclnumber,
+                ProvinceCode = first.ProvinceCode,
+                PROVINCE = first.PROVINCE,
+                TotalAmount = result.Sum(r => r.dDocTotal),
+                Lines = result.ToList(),
+            };
+
+            return bulk;
+        }
+
+
         public async Task<List<PRCNModel>> PRCNGetAll(TransactionFilter model)
         {
             List<PRCNModel> output = new List<PRCNModel>();
@@ -1721,7 +1809,8 @@ namespace Infrustructure_Layer.DataAccess
                                                      batchSize = model.BatchSize,
                                                      StartDate = model.StartDate,
                                                      EndDate = model.EndDate,
-                                                     location = model.location
+                                                     location = model.location,
+                                                     status = string.IsNullOrWhiteSpace(model.status) ? null : model.status
                                                  },
                                                  connectionStringName,
                                                  true);
@@ -1748,6 +1837,45 @@ namespace Infrustructure_Layer.DataAccess
             return output;
         }
 
+        public async Task<List<BCLModel>> BCLGetAllPending(TransactionFilter model)
+        {
+            List<BCLModel> output = new List<BCLModel>();
+            output = await _db.LoadDataAsync<BCLModel, dynamic>(_sp.BCLGetAllPending,
+                                                 new
+                                                 {
+                                                     shouldFilter = model.shouldFilter,
+                                                     dateFilter = model.dateFilter,
+                                                     locationFilter = model.locationFilter,
+                                                     startIndex = model.StartIndex,
+                                                     batchSize = model.BatchSize,
+                                                     StartDate = model.StartDate,
+                                                     EndDate = model.EndDate,
+                                                     location = model.location
+                                                 },
+                                                 connectionStringName,
+                                                 true);
+            return output;
+        }
+
+        public async Task<List<BCLModelPOSTED>> BCLGetAllPosted(TransactionFilter model)
+        {
+            List<BCLModelPOSTED> output = new List<BCLModelPOSTED>();
+            output = await _db.LoadDataAsync<BCLModelPOSTED, dynamic>(_sp.BCLGetAllPosted,
+                                                 new
+                                                 {
+                                                     shouldFilter = model.shouldFilter,
+                                                     dateFilter = model.dateFilter,
+                                                     locationFilter = model.locationFilter,
+                                                     startIndex = model.StartIndex,
+                                                     batchSize = model.BatchSize,
+                                                     StartDate = model.StartDate,
+                                                     EndDate = model.EndDate,
+                                                     location = model.location
+                                                 },
+                                                 connectionStringName,
+                                                 true);
+            return output;
+        }
         public async Task<List<PRCNModel>> PRCNNGetById(string sTranNo)
         {
             List<PRCNModel> output = new List<PRCNModel>();
@@ -1782,20 +1910,61 @@ namespace Infrustructure_Layer.DataAccess
                                            new
                                            {
                                                Id = model.sTranNo,
-                                               Status = model.Status
+                                               Status = model.Status,
+                                               MultiUpdate = model.multiUpdateStatus,
+                                               UpdateIds = model.updatedIds
                                            },
                                            connectionStringName,
                                            true);
         }
 
-        public async Task<int> BCLUpdateStatus(BCLModel model)
+        public async Task<int> UpdateBCL(UpdateBCLModel model, int status)
+        {
+            if (string.IsNullOrWhiteSpace(model.sTranNo))
+                throw new ArgumentException("sTranNo cannot be null or empty");
+
+            var result = await _db.LoadDataAsync<int, dynamic>(
+                _sp.BCLUpdateAPI,
+                new
+                {
+                    STranNo = model.sTranNo,
+                    Bclnumber = model.bclnumber,
+                    Description = model.description,
+                    Status = model.status,
+                    BCLStatus = status
+                },
+                connectionStringName, true
+            );
+
+            return result.FirstOrDefault();
+        }
+
+
+
+        public async Task<int> BCLUpdateStatus(BCLModel model, int status)
         {
             int output = 0;
+            // Status = model.bclStatus
             output = await _db.SaveDataAsync(_sp.BCLUpdate,
                                            new
                                            {
                                                Id = model.sTranNo,
-                                               Status = model.bclStatus
+                                               Status = status
+                                           },
+                                           connectionStringName,
+                                           true);
+            return output;
+        }
+
+        public async Task<int> BulkBCLUpdateStatus(string bclnumber, int status)
+        {
+            int output = 0;
+            // Status = model.bclStatus
+            output = await _db.SaveDataAsync(_sp.BCLUpdate,
+                                           new
+                                           {
+                                               Id = bclnumber,
+                                               Status = status
                                            },
                                            connectionStringName,
                                            true);
@@ -2110,7 +2279,7 @@ namespace Infrustructure_Layer.DataAccess
                                                      locationFilter = model.locationFilter,
                                                      StartDate = model.StartDate,
                                                      EndDate = model.EndDate,
-                                                     location = model.location
+                                                     location = model.location 
                                                  },
                                                  connectionStringName,
                                                  true);
@@ -3386,7 +3555,7 @@ namespace Infrustructure_Layer.DataAccess
         public async Task<DevicesAuthModel> DevicesAuthentication(string username, string password)
         {
             DevicesAuthModel output = new DevicesAuthModel();
-            var apiClient = new ApiClient("http://41.173.23.214:4560");
+            var apiClient = new ApiClient("https://efra.fra.org.zm");
 
             try
             {
@@ -3441,7 +3610,7 @@ namespace Infrustructure_Layer.DataAccess
         public async Task<ResponseModelKyc> FarmerKyc(string token, FarmerKycModel model)
         {
             ResponseModelKyc output = new ResponseModelKyc();
-            var apiClient = new ApiClient("http://41.173.23.214:4560");
+            var apiClient = new ApiClient("https://efra.fra.org.zm");
 
             try
             {
@@ -3492,12 +3661,20 @@ namespace Infrustructure_Layer.DataAccess
         public async Task<PostBCLModelResponse> BCLCreate(BCLModel model, string token)
         {
             PostBCLModelResponse output = new PostBCLModelResponse();
-            var apiClient = new ApiClient("http://41.173.23.214:4560");
+            var apiClient = new ApiClient("https://efra.fra.org.zm");
 
             try
             {
                 // Specify the endpoint for device authentication
                 string endpoint = "/fra/v1/e-payments/auth/Device/BCLServices/CreateBCL";
+
+                // var authData = new
+                // {
+                //     reference = model.sTranNo,
+                //     count = 1,
+                //     province_code = model.PROVINCE.Trim(),
+                //     total_amount = model.dDocTotal.ToString()
+                // };
 
                 var authData = new
                 {
@@ -3545,36 +3722,34 @@ namespace Infrustructure_Layer.DataAccess
         public async Task<PostBCLModelResponse> BCLCreateAttach(BCLModel model, PRCNModel prcn, DevicesModel devices, FarmerModel farmer, string token)
         {
             PostBCLModelResponse output = new PostBCLModelResponse();
-            var apiClient = new ApiClient("http://41.173.23.214:4560");
+            var apiClient = new ApiClient("https://efra.fra.org.zm");
 
             try
             {
                 // Specify the endpoint for device authentication
                 string endpoint = "/fra/v1/e-payments/auth/Device/BCLServices/AttachToBCL";
 
-                /*PRCNModel prcn = await PRCNNGet(model.sTranNo);
-                Console.WriteLine(prcn);
+                string bankBranchId = "";
+                string serial_number = model.sTranNo?.Trim().Length >= 12
+                   ? model.sTranNo.Trim().Substring(0, 12)
+                   : model.sTranNo?.Trim();
 
-                DevicesModel devices = await DevicesGetByDoc(prcn.SATELITE, prcn.terminal);
-
-                FarmerModel farmer = await FarmersGetFromNrc(model.sVendorID);
-                */
-                var authData = new
+                var postData = new
                 {
                     reference = model.sTranNo.Trim(),
-                    serial_number = devices.SerialNumber.Trim(),
                     prcn_number = model.rcpno.Trim(),
                     farmer_name = model.sVendorName.Trim(),
+                    serial_number = model.sTranNo.Trim(),
                     farmer_nrc = model.sVendorID.Trim(),
                     account_number = farmer.AccountNumber.Trim(),
-                    payment_provider_id = farmer.PaymentProviderId.Trim(),
-                    bank_branch_id = farmer.BankBranchId.Trim(),
+                    payment_provider_id = farmer?.PaymentProviderId.Trim(),
+                    bank_branch_id = bankBranchId,
                     number_of_bags = int.Parse(model.NoOfBags.ToString()),
                     amount = model.dDocTotal.ToString()
                 };
 
                 // Serialize the authentication data object to JSON
-                string requestData = JsonConvert.SerializeObject(authData);
+                string requestData = JsonConvert.SerializeObject(postData);
 
                 // Make a POST request to authenticate the device
                 string responseJson = await apiClient.PostAsyncBearer(endpoint, requestData, token);
@@ -3586,7 +3761,7 @@ namespace Infrustructure_Layer.DataAccess
 
 
                 output = deviceAuth;
-                output.steps = 2;
+                //output.steps = 2;
             }
             catch (Exception ex)
             {
@@ -3600,6 +3775,61 @@ namespace Infrustructure_Layer.DataAccess
 
             return output;
         }
+
+        public async Task<List<PostBCLModelResponse>> BulkBCL(BulkBCLModel model, string token)
+        {
+            var apiClient = new ApiClient("https://efra.fra.org.zm");
+
+            try
+            {
+                string endpoint = "/fra/v1/e-payments/auth/Device/BCLServices/BclBulkAttachTxn";
+
+                var transactions = new List<object>();
+                foreach (var txn in model.Transactions)
+                {
+                    transactions.Add(new
+                    {
+                        account_number = txn.AccountNumber?.Trim(),
+                        amount = txn.Amount.ToString(),
+                        bank_branch_id = txn.BankBranchId?.Trim(),
+                        farmer_name = txn.Names?.Trim(),
+                        farmer_nrc = txn.NRCNumber?.Trim(),
+                        number_of_bags = txn.NoOfBags,
+                        payment_provider_id = txn.PaymentProviderId?.Trim(),
+                        prcn_number = txn.PrcnNumber?.Trim(),
+                        serial_number = txn.SerialNumber?.Trim()
+                    });
+                }
+
+                var postData = new
+                {
+                    reference = model.bclnumber?.Trim(),
+                    count = transactions.Count,
+                    province_code = model.PROVINCE?.Trim(),
+                    total_amount = model.TotalAmount.ToString(),
+                    transactions = transactions
+                };
+
+                string requestData = JsonConvert.SerializeObject(postData);
+                string responseJson = await apiClient.PostAsyncBearer(endpoint, requestData, token);
+
+                Console.WriteLine(responseJson);
+
+                var deviceAuth = JsonConvert.DeserializeObject<PostBCLModelResponse>(responseJson);
+                return new List<PostBCLModelResponse> { deviceAuth };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                // Return an empty list or a list with an error object if needed
+                return new List<PostBCLModelResponse>();
+            }
+            finally
+            {
+                apiClient.Dispose();
+            }
+        }
+
 
         public async Task<List<DataModelPay>> GetPaymentProviderApp(int page = 1, int rowCount = 250)
         {
@@ -3634,7 +3864,7 @@ namespace Infrustructure_Layer.DataAccess
         public async Task<PaymentProviderModel> GetPaymentProviders(string token)
         {
             PaymentProviderModel output = new PaymentProviderModel();
-            var apiClient = new ApiClient("http://41.173.23.214:4560");
+            var apiClient = new ApiClient("https://efra.fra.org.zm");
 
             try
             {

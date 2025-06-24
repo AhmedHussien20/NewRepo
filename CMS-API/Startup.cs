@@ -113,7 +113,11 @@ namespace CMS_API
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "CMS_API v1"));
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "CMS_API v1");
+                    c.RoutePrefix = "swagger"; // Default; remove if you want it at root
+                });
             }
             app.UseCors(builder => builder
                           .AllowAnyHeader()

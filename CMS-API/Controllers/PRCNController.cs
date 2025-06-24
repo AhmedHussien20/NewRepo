@@ -30,7 +30,7 @@ namespace CMS_API.Controllers
         [Route("createPRCN")]
         public async Task<ActionResult<PRCNModel>> createPRCN([FromBody] PRCNRequestModel model)
         {
-            //General _gl = new();
+            General _gl = new();
             try
             {
                 List<ResponseModel> jsonResponseArray = new List<ResponseModel>();
@@ -75,7 +75,7 @@ namespace CMS_API.Controllers
                             errorMessage = e.Message
                         });
 
-                        //await _gl.UpdateErrorLogAsync(e, "PRCN CREATE");
+                        await _gl.UpdateErrorLogAsync(e, "PRCN CREATE");
                     }
                 }
                 return _response.getResponse(jsonResponseArray, "");
@@ -179,6 +179,7 @@ namespace CMS_API.Controllers
             }
         }
 
+
         //getAll
         [HttpPost]
         [Route("getAllPRCN")]
@@ -203,6 +204,35 @@ namespace CMS_API.Controllers
             try
             {
                 var output = await _db.BCLGetAll(model);
+                return _response.getResponse(output, "BCL not found");
+            }
+            catch (Exception e)
+            {
+                return _response.errorResponse(e.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("getAllBCLPending")]
+        public async Task<ActionResult<IEnumerable<BCLModel>>> getAllBCLPending([FromBody] TransactionFilter model)
+        {
+            try
+            {
+                var output = await _db.BCLGetAllPending(model);
+                return _response.getResponse(output, "BCL not found");
+            }
+            catch (Exception e)
+            {
+                return _response.errorResponse(e.Message);
+            }
+        }
+        [HttpPost]
+        [Route("getAllBCLPosted")]
+        public async Task<ActionResult<IEnumerable<BCLModelPOSTED>>> getAllBCLPosted([FromBody] TransactionFilter model)
+        {
+            try
+            {
+                var output = await _db.BCLGetAllPosted(model);
                 return _response.getResponse(output, "BCL not found");
             }
             catch (Exception e)
@@ -263,7 +293,7 @@ namespace CMS_API.Controllers
                 }
 
                 // Retrieve BCL
-
+                var status = model.status;
                 var prcn = await _db.PRCNNGet(model.sTranNo.Trim());
                 var bcl = await _db.BCLGet(model.sTranNo);
                 var devices = await _db.DevicesGetByDoc(prcn.SATELITE, prcn.terminal);
@@ -332,7 +362,7 @@ namespace CMS_API.Controllers
                 }
 
                 // Update BCL status
-                var bclUpdate = await _db.BCLUpdateStatus(bcl);
+                var bclUpdate = await _db.BCLUpdateStatus(bcl, status);
                 return Ok(new ResponseModel { error = false, errorMessage = "Success", results = bclUpdate });
 
                 //return Ok(new ResponseModel { error = false, errorMessage = "Success", results = bcl });
@@ -343,6 +373,130 @@ namespace CMS_API.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("postBCLBulk")]
+        public async Task<ActionResult<IEnumerable<PostBCLModelResponse>>> PostBCLBuik([FromBody] BulkBCLModel model)
+        {
+            try
+            {
+                // Get request headers (not used, so this can be removed if unnecessary)
+                var headers = HttpContext.Request.Headers;
+
+                // Retrieve authorization
+                var auth = await _db.GetAuthorization();
+                if (auth == null)
+                {
+                    return Ok(new ResponseModel { error = true, errorMessage = "Failed to get authorization" });
+                }
+
+                // Retrieve BCL from DB
+                var status = model.status;
+                var BCLnumber = model.sTranNo;
+                var bcl = await _db.BulkBCLGet(model.sTranNo);
+                //var bcl = bclList.FirstOrDefault();
+                if (bcl == null)
+                {
+                    return Ok(new ResponseModel { error = true, errorMessage = "Failed to get BCL" });
+                }
+
+                // Authenticate device
+                var deviceAuthentication = await _db.DevicesAuthentication(auth.Username, auth.Password);
+                if (deviceAuthentication == null || deviceAuthentication.Data == null)
+                {
+                    return Ok(new ResponseModel { error = true, errorMessage = "Device authentication failed" });
+                }
+
+                string token = deviceAuthentication.Data.Token;
+
+                // Step 3: Prepare dynamic BCLModel from DB data
+                var modelToPost = new BulkBCLModel
+                {
+                    sTranNo = bcl.sTranNo,
+                    PROVINCE = bcl.PROVINCE,
+                    TotalAmount = bcl.TotalAmount,
+                    status = model.status,
+                    bclnumber = bcl.bclnumber,
+                    Transactions = new List<TransactionModel>()
+                };
+
+                // Assuming bcl.Lines contains list of line items for the transaction
+                foreach (var line in bcl.Lines)
+                {
+                    var txn = new TransactionModel
+                    {
+                        AccountNumber = line.AccountNumber,
+                        Amount = line.dDocTotal,
+                        BankBranchId = line.BankBranchId,
+                        Names = line.Names,
+                        NRCNumber = line.NRCNumber,
+                        NoOfBags = line.NoOfBags,
+                        PaymentProviderId = line.PaymentProviderId,
+                        PrcnNumber = line.rcpno,
+                        SerialNumber = line.sTranNo
+                    };
+
+                    modelToPost.Transactions.Add(txn);
+                }
+
+                // Step 4: Post BCL bulk attachment
+                var result = await _db.BulkBCL(modelToPost, token);
+                var output = result.FirstOrDefault();
+                if (output.status != 0)
+                {
+                    return Ok(new ResponseModel { error = true, errorMessage = "Failed to create and attach BCL", results = output });
+                }
+
+                // Step 5: Update BCL status (uncomment if implemented)
+                status = 1;
+                var bclUpdate = await _db.BulkBCLUpdateStatus(BCLnumber, status);
+
+                return Ok(new ResponseModel { error = false, errorMessage = "Success" /* results = bclUpdate */ });
+            }
+            catch (Exception e)
+            {
+                return _response.errorResponse(e.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("updateBCLStatus")]
+        public async Task<ActionResult<TransactionsModel>> updateBCLStatus([FromBody] UpdateBCLModel model)
+        {
+            try
+            {
+                int status = 1;
+                int rowsAffected = await _db.UpdateBCL(model, status);
+
+                if (rowsAffected > 0)
+                {
+                    return Ok(new
+                    {
+                        response_code = 100,
+                        status = "success",
+                        message = "Record Updated Successfully",
+                        data = new
+                        {
+                            bclnumber = model.bclnumber,
+                            sTransNo = model.sTranNo
+                        }
+                    });
+                }
+                else
+                {
+                    return Ok(new
+                    {
+                        response_code = 105,
+                        status = "Failed",
+                        message = "Record not found to Update",
+                        data = new { }
+                    });
+                }
+            }
+            catch (Exception e)
+            {
+                return _response.errorResponse(e.Message);
+            }
+        }
 
         //getAll
         [HttpGet]

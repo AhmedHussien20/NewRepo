@@ -17,7 +17,7 @@ namespace Domain_Layer.Models
         public int Quantity { get; set; }
         public decimal Total { get; set; }
         public decimal RetractedAmount { get; set; }
-        public string Status { get; set; } = "Pending";
+        public string Status { get; set; }
         public string SerialNumber { get; set; }
 
         public DateTime Timestamp { get; set; }
@@ -38,5 +38,6 @@ namespace Domain_Layer.Models
         public int StartIndex { get; set; } = 0;
         public int BatchSize { get; set; } = 10;
         public string DeliveryOrderNo { get; set; } = null;
+        public string status { get; set; } = null; 
     }
 }

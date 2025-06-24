@@ -38,7 +38,8 @@ namespace Domain_Layer.Models
         [DefaultValue("Cash")]
         public string PaymentMode { get; set; }
         public string PaymentProviderId { get; set; }
-        public string BankBranchId { get; set; }
+        #nullable enable
+        public string? BankBranchId { get; set; }
         public string BankName { get; set; }
         public string BranchName { get; set; }
         public string BranchCode { get; set; }

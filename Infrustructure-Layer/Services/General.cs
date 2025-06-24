@@ -40,7 +40,7 @@ namespace Infrustructure_Layer.Services
 
                     try
                     {
-                        await email.emailLogger("muyangwam@netone.co.zm",
+                        await email.emailLogger("thomasn@netone.co.zm",
                             strErrorLog.ToString(), method);
                     }
                     catch { }

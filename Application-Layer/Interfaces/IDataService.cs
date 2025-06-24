@@ -130,12 +130,15 @@ namespace Application_Layer.Interfaces
         Task<int> PRCNCreate(PRCNModel model);
         Task<PRCNModel> PRCNNGet(string Id);
         Task<BCLModel> BCLGet(string Id);
+        Task<BulkBCLModel> BulkBCLGet(string ID);
         Task<List<PRCNModel>> PRCNGetAll(TransactionFilter model);
         Task<List<BCLModel>> BCLGetAll(TransactionFilter model);
+        Task<List<BCLModel>> BCLGetAllPending(TransactionFilter model);
+        Task<List<BCLModelPOSTED>> BCLGetAllPosted(TransactionFilter model);
         Task<List<PRCNModel>> PRCNNGetById(string Id);
         Task<List<PRCNModel>> PRCNGetByLocation(string location, int page = 1, int rowCount = 100);
         Task PRCNUpdate(PRCNModel model);
-
+        Task<int> UpdateBCL(UpdateBCLModel model, int status);
         //Satelite
         Task<int> SateliteCreate(SateliteModel model);
         Task SateliteUpdate(SateliteModel model);
@@ -234,8 +237,10 @@ namespace Application_Layer.Interfaces
         Task<DevicesAuthModel> DevicesAuthentication(string username, string password);
         Task<ResponseModelKyc> FarmerKyc(string token, FarmerKycModel model);
         Task<PostBCLModelResponse> BCLCreate(BCLModel model, string Token);
+        Task<List<PostBCLModelResponse>> BulkBCL(BulkBCLModel model, string Token);
         Task<PostBCLModelResponse> BCLCreateAttach(BCLModel model, PRCNModel prcn, DevicesModel devices, FarmerModel farmer, string Token);
-        Task<int> BCLUpdateStatus(BCLModel model);
+        Task<int> BCLUpdateStatus(BCLModel model, int status);
+        Task<int> BulkBCLUpdateStatus(string bclnumber, int status);
         Task<PaymentProviderModel> GetPaymentProviders(string token);
         Task<int> PaymentProviderCreate(DataModelPay model);
         Task<int> BranchCreate(Branches model, int providerId);

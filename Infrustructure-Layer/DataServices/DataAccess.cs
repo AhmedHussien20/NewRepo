@@ -21,37 +21,69 @@ namespace Infrustructure_Layer.DataAccess
             _config = config;
         }
 
-        public async Task<List<T>> LoadDataAsync<T, U>(string sqlStatement,
-                                                       U parameters,
-                                                       string connectionStringName,
-                                                       bool isStoredProcedure = false)
+   public async Task<List<T>> LoadDataAsync<T, U>(
+        string sqlStatement,
+        U parameters,
+        string connectionStringName,
+        bool isStoredProcedure = false)
+    {
+        try
         {
-            try
-            {
-                string connectionString = _config.GetConnectionString(connectionStringName);
-                CommandType commandType = CommandType.Text;
+            string connectionString = _config.GetConnectionString(connectionStringName);
+            CommandType commandType = isStoredProcedure ? CommandType.StoredProcedure : CommandType.Text;
 
-                if (isStoredProcedure == true)
-                {
-                    commandType = CommandType.StoredProcedure;
-                }
-
-                using (IDbConnection connection = new SqlConnection(connectionString))
-                {
-                    List<T> rows = new List<T>();
-                    await Task.Run(() =>
-                    {
-                        rows = connection.Query<T>(sqlStatement, parameters, commandType: commandType).ToList();
-                    });
-                    return rows;
-                }
-            }
-            catch (Exception e)
+            using (IDbConnection connection = new SqlConnection(connectionString))
             {
-                Debug.WriteLine($"\\nError on LoadData: {e.Message}");
-                throw new ArgumentException($"EXCEPTION WHILE FETCHING DATA: {e.Message}");
+                var rows = (await connection.QueryAsync<T>(
+                    sqlStatement,
+                    parameters,
+                    commandType: commandType,
+                    commandTimeout: 500 
+                )).ToList();
+
+                return rows;
             }
         }
+        catch (Exception e)
+        {
+            Debug.WriteLine($"\nError on LoadData: {e.Message}");
+            throw new ArgumentException($"EXCEPTION WHILE FETCHING DATA: {e.Message}");
+        }
+    }
+
+
+        // public async Task<List<T>> LoadDataAsync<T, U>(string sqlStatement,
+        //                                                U parameters,
+        //                                                string connectionStringName,
+        //                                                bool isStoredProcedure = false)
+        // {
+        //     try
+        //     {
+        //         string connectionString = _config.GetConnectionString(connectionStringName);
+        //         CommandType commandType = CommandType.Text;
+
+        //         if (isStoredProcedure == true)
+        //         {
+        //             commandType = CommandType.StoredProcedure;
+        //         }
+
+
+        //         using (IDbConnection connection = new SqlConnection(connectionString))
+        //         {
+        //             List<T> rows = new List<T>();
+        //             await Task.Run(() =>
+        //             {
+        //                 rows = connection.Query<T>(sqlStatement, parameters, commandType: commandType).ToList();
+        //             });
+        //             return rows;
+        //         }
+        //     }
+        //     catch (Exception e)
+        //     {
+        //         Debug.WriteLine($"\\nError on LoadData: {e.Message}");
+        //         throw new ArgumentException($"EXCEPTION WHILE FETCHING DATA: {e.Message}");
+        //     }
+        // }
 
         public async Task<List<T>> LoadSingleDataAsync<T>(string sqlStatement,
                                                   string connectionStringName,

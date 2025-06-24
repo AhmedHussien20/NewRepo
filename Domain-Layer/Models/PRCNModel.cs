@@ -34,6 +34,8 @@ namespace Domain_Layer.Models
         public string verifyUser { get; set; }
         public string DeviceSerialNumber { get; set; }
         public string dateModifyBy { get; set; }
-        public string dateModify { get; set; }
+        public string dateModify { get; set; } 
+        public bool multiUpdateStatus { get; set; }
+        public string updatedIds { get; set; }
     }
 }

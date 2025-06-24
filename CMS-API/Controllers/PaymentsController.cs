@@ -35,14 +35,14 @@ namespace CMS_API.Controllers
                 if (auth != null)
                 {
                     var output = await _db.FarmerKyc(auth.Token, models.Results);
-                    if(output.Status == 700)
+                    if (output.Status == 700)
                     {
                         var ad = await authDevice();
-                        if(ad.Value.Status == 0)
+                        if (ad.Value.Status == 0)
                         {
                             auth = await _db.GetAuthorization();
                             output = await _db.FarmerKyc(auth.Token, models.Results);
-                        } 
+                        }
                     }
                     return _response.getResponse(output, "Authentication Failed"); // Returning the dummy device authentication model
                 }
@@ -65,7 +65,7 @@ namespace CMS_API.Controllers
 
         //create
         [HttpPost]
-        [Route("authDevice")]
+        [Route("authDevices")]
         public async Task<ActionResult<DevicesAuthModel>> authDevice()
         {
             try

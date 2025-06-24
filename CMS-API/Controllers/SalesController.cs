@@ -4,6 +4,7 @@ using CMS_API.Services;
 using Domain_Layer.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Infrustructure_Layer.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,6 +29,7 @@ namespace CMS_API.Controllers
         [Route("createGIN")]
         public async Task<ActionResult<GINModel>> createGIN([FromBody] GINRequestModel model)
         {
+            General _gl = new();
             try
             {
                 List<ResponseModel> jsonResponseArray = new List<ResponseModel>();
@@ -61,6 +63,7 @@ namespace CMS_API.Controllers
                                 error = true,
                                 errorMessage = "Error while making sale"
                             });
+                            //await _gl.UpdateErrorLogAsync(Exeption e, "GIN CREATE 1");
                         }
                     }
                     catch (Exception e)
@@ -70,12 +73,14 @@ namespace CMS_API.Controllers
                             error = true,
                             errorMessage = e.Message
                         });
+                        await _gl.UpdateErrorLogAsync(e, "GIN CREATE");
                     }
                 }
                 return _response.getResponse(jsonResponseArray, "");
             }
             catch (Exception e)
             {
+                await _gl.UpdateErrorLogAsync(e, "GIN CREATE3");
                 return _response.errorResponse(e.Message);
             }
         }
@@ -100,6 +105,7 @@ namespace CMS_API.Controllers
         [Route("updateGIN")]
         public async Task<ActionResult<TransactionsModel>> updateGIN([FromBody] GINModel model)
         {
+            General _gl = new();
             try
             {
                 await _db.GINUpdate(model);
@@ -108,6 +114,7 @@ namespace CMS_API.Controllers
             catch (Exception e)
             {
                 return _response.errorResponse(e.Message);
+                await _gl.UpdateErrorLogAsync(e, "UPDATE CREATE");
             }
         }
 

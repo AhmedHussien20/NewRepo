@@ -159,6 +159,10 @@ namespace Infrustructure_Layer.Services
         public string PRCNCreate = baseValue + "PRCNCreate";
         public string PRCNNGet = baseValue + "PRCNNGet";
         public string BCLGet = baseValue + "BCLGet";
+        public string BCLGetBulk = baseValue + "BCLGetBulk";
+        public string BCLGetAllPending = baseValue + "BCLGetAllPending";
+        public string BCLGetAllPosted = baseValue + "BCLGetAllPosted";
+        public string BCLUpdateAPI = baseValue + "BCLUpdateAPI";
         public string PRCNGetAll = baseValue + "PRCNGetAll";
         public string BCLGetAll = baseValue + "BCLGetAll";
         public string PRCNUpdate = baseValue + "PRCNUpdate";

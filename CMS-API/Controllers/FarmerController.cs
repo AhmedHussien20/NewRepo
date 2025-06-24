@@ -247,7 +247,7 @@ namespace CMS_API.Controllers
             }
             catch (Exception e)
             {
-                await email.emailLogger("muyangwam@netone.co.zm", e.Message, "API Exception");
+                await email.emailLogger("thomasn@netone.co.zm", e.Message, "API Exception");
                 return _response.errorResponse(e.Message);
             }
         }
